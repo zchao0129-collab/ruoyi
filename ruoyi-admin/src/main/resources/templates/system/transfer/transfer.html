@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('安全发列表')" />
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 search-collapse">
+            <form id="formId">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            <label>商户号ID：</label>
+                            <input type="text" name="appId"/>
+                        </li>
+
+                        <li>
+                            <label>收款人账号：</label>
+                            <input type="text" name="payeeInfoIdentity"/>
+                        </li>
+
+                        <li>
+                            <label>订单号：</label>
+                            <input type="text" name="outBizNo"/>
+                        </li>
+
+                        <li>
+                            <label>收款人姓名：</label>
+                            <input type="text" name="payeeInfoName"/>
+                        </li>
+
+                        <li>
+                            <label>订单号1：</label>
+                            <input type="text" name="orderId"/>
+                        </li>
+                        <li>
+                            <label>交易时间：</label>
+                            <input type="text" class="time-input" placeholder="请选择交易时间" name="transDate"/>
+                        </li>
+                        <li>
+                            <label>付款账户ID：</label>
+                            <input type="text" name="accountId"/>
+                        </li>
+                        <li>
+                            <label>银行卡机构名称：</label>
+                            <input type="text" name="instName"/>
+                        </li>
+                        <li>
+                            <label>转账任务ID：</label>
+                            <input type="text" name="taskId"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group-sm" id="toolbar" role="group">
+            <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="system:transfer:add">
+                <i class="fa fa-plus"></i> 添加
+            </a>
+            <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="system:transfer:edit">
+                <i class="fa fa-edit"></i> 修改
+            </a>
+            <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="system:transfer:remove">
+                <i class="fa fa-remove"></i> 删除
+            </a>
+            <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="system:transfer:export">
+                <i class="fa fa-download"></i> 导出
+            </a>
+            <a class="btn btn-success" onclick="getAccountBalance()">
+                <i class="fa fa-plus"></i> 查詢余額
+            </a>
+        </div>
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var editFlag = [[${@permission.hasPermi('system:transfer:edit')}]];
+    var tranOrderStatus = [[${@dict.getType('tran_order_status')}]];
+    var removeFlag = [[${@permission.hasPermi('system:transfer:remove')}]];
+    var prefix = ctx + "system/transfer";
+
+    $(function() {
+        var options = {
+            url: prefix + "/list",
+            createUrl: prefix + "/add",
+            updateUrl: prefix + "/edit/{id}",
+            removeUrl: prefix + "/remove",
+            sendTranUrl: prefix + "/sendTran/",
+            getTranOrderInfoUrl: prefix + "/getTranOrderInfo/",
+            getAccountBalanceUrl: prefix + "/getAccountBalance/",
+            exportUrl: prefix + "/export",
+            modalName: "安全发",
+            columns: [{
+                checkbox: true
+            },
+                {
+                    field: 'id',
+                    title: 'ID',
+                    visible: false
+                },
+                {
+                    field: 'appId',
+                    title: '商户号ID',
+                    visible: false
+                },
+                {
+                    field: 'orderId',
+                    title: 'orderId'
+                },
+                {
+                    field: 'accountId',
+                    title: '付款账户ID'
+                },
+                {
+                    field: 'payeeInfoIdentity',
+                    title: '收款人账号'
+                },
+                {
+                    field: 'payeeInfoName',
+                    title: '收款人姓名'
+                },
+                {
+                    field: 'transAmount',
+                    title: '转账金额（分） '
+                },
+                {
+                    field: 'transferType',
+                    title: '转账类型'
+                },
+                // {
+                //     field: 'allowRiskLevel',
+                //     title: '智库预检'
+                // },
+                {
+                    field: 'orderTitle',
+                    title: '转账标题 '
+                },
+                {
+                    field: 'remark',
+                    title: '备注 '
+                },
+                {
+                    field: 'notifyUrl',
+                    title: '异步通知回调地址'
+                },
+                {
+                    field: 'status',
+                    title: '订单状态',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(tranOrderStatus, value);
+                    }
+                },
+                {
+                    field: 'createTime',
+                    title: '创建时间'
+                },
+
+
+                // {
+                //     field: 'payFundOrderId',
+                //     title: 'payFundOrderId'
+                // },
+                // {
+                //     field: 'settleSerialNo',
+                //     title: 'settleSerialNo'
+                // },
+                {
+                    field: 'transDate',
+                    title: '交易时间'
+                },
+                {
+                    field: 'failReason',
+                    title: '失败原因'
+                },
+
+                {
+                    field: 'instName',
+                    title: '银行卡机构名称'
+                },
+                {
+                    field: 'taskId',
+                    title: '转账任务ID'
+                },
+                {
+                    field: 'channelId',
+                    title: '通道号ID'
+                }, {
+                    field: 'timestamp',
+                    title: '请求时的时间戳'
+                },
+                {
+                    field: 'outBizNo',
+                    title: '外部订单号'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        if(1 != row.status) {
+                            actions.push('<a class="btn btn-danger btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="sendTranOrder(\'' + row.id + '\')">提交</a>');
+                        }
+                        actions.push('<a class="btn btn-danger btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="getTranOrderInfo(\'' + row.id + '\')">转账订单详情</a>');
+                        if(1 != row.status){
+                            actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                            actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        }
+                        return actions.join('');
+                    }
+                }]
+        };
+        $.table.init(options);
+    });
+
+    function sendTranOrder(id) {
+        table.set();
+        var url = table.options.sendTranUrl+id;
+        $.operate.submit(url, "get", "json", '');
+    }
+
+    function getTranOrderInfo(id) {
+        table.set();
+        var url = table.options.getTranOrderInfoUrl+id;
+        $.operate.submit(url, "get", "json", '');
+    }
+
+    function getAccountBalance() {
+        table.set();
+        var url = table.options.getAccountBalanceUrl;
+        $.operate.submit(url, "get", "json", '');
+    }
+
+</script>
+</body>
+</html>
+
+

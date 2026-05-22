@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysAlipayConfigMapper">
+
+    <resultMap type="SysAlipayConfig" id="SysAlipayConfigResult">
+        <result property="id"    column="id"    />
+        <result property="APPID"    column="APPID"    />
+        <result property="rsaPrivateKey"    column="RSA_PRIVATE_KEY"    />
+        <result property="notifyUrl"    column="notify_url"    />
+        <result property="returnUrl"    column="return_url"    />
+        <result property="URL"    column="URL"    />
+        <result property="CHARSET"    column="CHARSET"    />
+        <result property="FORMAT"    column="FORMAT"    />
+        <result property="alipayPrivateKey"    column="ALIPAY_PRIVATE_KEY"    />
+        <result property="alipayPublicKey"    column="ALIPAY_PUBLIC_KEY"    />
+        <result property="logPath"    column="log_path"    />
+        <result property="SIGNTYPE"    column="SIGNTYPE"    />
+        <result property="alipayStatus"    column="alipay_status"    />
+        <result property="keyOrCert"    column="keyOrCert"    />
+        <result property="appCertPath"    column="appCertPath"    />
+        <result property="alipayCertPath"    column="alipayCertPath"    />
+        <result property="alipayRootCertPath"    column="alipayRootCertPath"    />
+        <result property="weightStart"    column="weightStart"    />
+        <result property="weightEnd"    column="weightEnd"    />
+    </resultMap>
+
+    <sql id="selectSysAlipayConfigVo">
+        select id, APPID, RSA_PRIVATE_KEY, notify_url, return_url, URL, CHARSET, FORMAT, ALIPAY_PRIVATE_KEY, ALIPAY_PUBLIC_KEY, log_path, SIGNTYPE, alipay_status
+            ,keyOrCert,appCertPath,alipayCertPath,alipayRootCertPath,weightStart,weightEnd
+        from sys_alipay_config
+    </sql>
+
+    <select id="selectSysAlipayConfigList" parameterType="SysAlipayConfig" resultMap="SysAlipayConfigResult">
+        <include refid="selectSysAlipayConfigVo"/>
+        <where>
+            <if test="APPID != null  and APPID != ''"> and APPID = #{APPID}</if>
+            <if test="rsaPrivateKey != null  and rsaPrivateKey != ''"> and RSA_PRIVATE_KEY = #{rsaPrivateKey}</if>
+            <if test="notifyUrl != null  and notifyUrl != ''"> and notify_url = #{notifyUrl}</if>
+            <if test="returnUrl != null  and returnUrl != ''"> and return_url = #{returnUrl}</if>
+            <if test="URL != null  and URL != ''"> and URL = #{URL}</if>
+            <if test="CHARSET != null  and CHARSET != ''"> and CHARSET = #{CHARSET}</if>
+            <if test="FORMAT != null  and FORMAT != ''"> and FORMAT = #{FORMAT}</if>
+            <if test="alipayPrivateKey != null  and alipayPrivateKey != ''"> and ALIPAY_PRIVATE_KEY = #{alipayPrivateKey}</if>
+            <if test="alipayPublicKey != null  and alipayPublicKey != ''"> and ALIPAY_PUBLIC_KEY = #{alipayPublicKey}</if>
+            <if test="logPath != null  and logPath != ''"> and log_path = #{logPath}</if>
+            <if test="SIGNTYPE != null  and SIGNTYPE != ''"> and SIGNTYPE = #{SIGNTYPE}</if>
+            <if test="alipayStatus != null"> and alipay_status = #{alipayStatus}</if>
+            <if test="keyOrCert != null"> and keyOrCert = #{keyOrCert}</if>
+        </where>
+    </select>
+
+    <select id="selectSysAlipayConfigById" parameterType="Long" resultMap="SysAlipayConfigResult">
+        <include refid="selectSysAlipayConfigVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectSysAlipayConfigStatusTopOne"  resultMap="SysAlipayConfigResult">
+        <include refid="selectSysAlipayConfigVo"/>
+        where alipay_status = 1
+        limit 1
+    </select>
+
+    <select id="selectSysAlipayConfigStatusWeight"  parameterType="Integer" resultMap="SysAlipayConfigResult">
+        <include refid="selectSysAlipayConfigVo"/>
+        where alipay_status = 1 and weightStart &lt;= #{weight} and #{weight} &lt;= weightEnd
+        limit 1
+    </select>
+
+    <select id="selectSysAlipayConfig"  parameterType="String" resultMap="SysAlipayConfigResult">
+        <include refid="selectSysAlipayConfigVo"/>
+        where APPID = #{appId}
+    </select>
+
+
+    <insert id="insertSysAlipayConfig" parameterType="SysAlipayConfig" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_alipay_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="APPID != null and APPID != ''">APPID,</if>
+            <if test="rsaPrivateKey != null and rsaPrivateKey != ''">RSA_PRIVATE_KEY,</if>
+            <if test="notifyUrl != null and notifyUrl != ''">notify_url,</if>
+            <if test="returnUrl != null and returnUrl != ''">return_url,</if>
+            <if test="URL != null and URL != ''">URL,</if>
+            <if test="CHARSET != null and CHARSET != ''">CHARSET,</if>
+            <if test="FORMAT != null and FORMAT != ''">FORMAT,</if>
+            <if test="alipayPrivateKey != null">ALIPAY_PRIVATE_KEY,</if>
+            <if test="alipayPublicKey != null and alipayPublicKey != ''">ALIPAY_PUBLIC_KEY,</if>
+            <if test="logPath != null">log_path,</if>
+            <if test="SIGNTYPE != null and SIGNTYPE != ''">SIGNTYPE,</if>
+            <if test="alipayStatus != null">alipay_status,</if>
+            <if test="keyOrCert != null">keyOrCert,</if>
+            <if test="appCertPath != null  and appCertPath != ''">appCertPath,</if>
+            <if test="alipayCertPath != null and alipayCertPath != ''">alipayCertPath,</if>
+            <if test="alipayRootCertPath != null  and alipayRootCertPath != ''">alipayRootCertPath,</if>
+            <if test="weightStart != null  and weightStart != ''">weightStart,</if>
+            <if test="weightEnd != null  and weightEnd != ''">weightEnd,</if>
+
+
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="APPID != null and APPID != ''">#{APPID},</if>
+            <if test="rsaPrivateKey != null and rsaPrivateKey != ''">#{rsaPrivateKey},</if>
+            <if test="notifyUrl != null and notifyUrl != ''">#{notifyUrl},</if>
+            <if test="returnUrl != null and returnUrl != ''">#{returnUrl},</if>
+            <if test="URL != null and URL != ''">#{URL},</if>
+            <if test="CHARSET != null and CHARSET != ''">#{CHARSET},</if>
+            <if test="FORMAT != null and FORMAT != ''">#{FORMAT},</if>
+            <if test="alipayPrivateKey != null">#{alipayPrivateKey},</if>
+            <if test="alipayPublicKey != null and alipayPublicKey != ''">#{alipayPublicKey},</if>
+            <if test="logPath != null">#{logPath},</if>
+            <if test="SIGNTYPE != null and SIGNTYPE != ''">#{SIGNTYPE},</if>
+            <if test="alipayStatus != null">#{alipayStatus},</if>
+            <if test="keyOrCert != null ">#{keyOrCert},</if>
+            <if test="appCertPath != null  and appCertPath != ''">#{appCertPath},</if>
+            <if test="alipayCertPath != null and alipayCertPath != ''">#{alipayCertPath},</if>
+            <if test="alipayRootCertPath != null  and alipayRootCertPath != ''">#{alipayRootCertPath},</if>
+            <if test="weightStart != null  and weightStart != ''">#{weightStart},</if>
+            <if test="weightEnd != null  and weightEnd != ''">#{weightEnd},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysAlipayConfig" parameterType="SysAlipayConfig">
+        update sys_alipay_config
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="APPID != null and APPID != ''">APPID = #{APPID},</if>
+            <if test="rsaPrivateKey != null and rsaPrivateKey != ''">RSA_PRIVATE_KEY = #{rsaPrivateKey},</if>
+            <if test="notifyUrl != null and notifyUrl != ''">notify_url = #{notifyUrl},</if>
+            <if test="returnUrl != null and returnUrl != ''">return_url = #{returnUrl},</if>
+            <if test="URL != null and URL != ''">URL = #{URL},</if>
+            <if test="CHARSET != null and CHARSET != ''">CHARSET = #{CHARSET},</if>
+            <if test="FORMAT != null and FORMAT != ''">FORMAT = #{FORMAT},</if>
+            <if test="alipayPrivateKey != null">ALIPAY_PRIVATE_KEY = #{alipayPrivateKey},</if>
+            <if test="alipayPublicKey != null and alipayPublicKey != ''">ALIPAY_PUBLIC_KEY = #{alipayPublicKey},</if>
+            <if test="logPath != null">log_path = #{logPath},</if>
+            <if test="SIGNTYPE != null and SIGNTYPE != ''">SIGNTYPE = #{SIGNTYPE},</if>
+            <if test="alipayStatus != null">alipay_status = #{alipayStatus},</if>
+            <if test="keyOrCert != null">keyOrCert = #{keyOrCert},</if>
+            <if test="appCertPath != null  and appCertPath != ''">appCertPath = #{appCertPath},</if>
+            <if test="alipayCertPath != null and alipayCertPath != ''">alipayCertPath = #{alipayCertPath},</if>
+            <if test="alipayRootCertPath != null  and alipayRootCertPath != ''">alipayRootCertPath = #{alipayRootCertPath},</if>
+            <if test="weightStart != null  and weightStart != ''">weightStart = #{weightStart},</if>
+            <if test="weightEnd != null  and weightEnd != ''">weightEnd = #{weightEnd},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysAlipayConfigById" parameterType="Long">
+        delete from sys_alipay_config where id = #{id}
+    </delete>
+
+    <delete id="deleteSysAlipayConfigByIds" parameterType="String">
+        delete from sys_alipay_config where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

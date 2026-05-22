@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('收银台')" />
+    <style>
+        body { background-color: #f5f5f5; }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .form-horizontal {
+            margin: 0 auto;
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: #5cb85c;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active,
+        .btn-primary.active {
+            background-color: #449d44;
+            border-color: #449d44;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="container">
+    <form class="form-horizontal m-t" id="form-order-add" th:action="${action_url}" method="post">
+        <div class="row">
+            <label class="col-sm-2 control-label" style="font-size: 20px;">支付中心</label>
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="col-sm-1 control-label">支付金额</label>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="amount" name="amount">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-10">
+                       <div class="form-control-static" th:text=" '订单号：'+ ${orderNo}">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-3 col-sm-9">
+                    <button type="submit" class="btn btn-primary btn-block" >确认</button>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" class="form-control" id="appid" name="appid" th:value="${appid}" readonly>
+        <input type="hidden" class="form-control" id="subject" name="subject" th:value="${subject}" readonly>
+        <input type="hidden" class="form-control" id="merchantNo" name="merchantNo" th:value="${merchantNo}" readonly>
+        <input type="hidden" class="form-control" id="orderNo" name="orderNo" th:value="${orderNo}" readonly>
+        <input type="hidden" class="form-control" id="merchantOrderNo" name="merchantOrderNo" th:value="${merchantOrderNo}" readonly>
+        <input type="hidden" class="form-control" id="remark" name="remark" th:value="${remark}" readonly>
+        <input type="hidden" class="form-control" id="regionName" name="regionName" th:value="${regionName}" readonly>
+        <input type="hidden" class="form-control" id="callbackUrl" name="callbackUrl" th:value="${callbackUrl}" readonly>
+        <input type="hidden" class="form-control" id="returnUrl" name="returnUrl" th:value="${returnUrl}" readonly>
+        <input type="hidden" class="form-control" id="yjamount" name="yjamount" th:value="${yjamount}" readonly>
+        <input type="hidden" class="form-control" id="method" name="method" th:value="${method}" readonly>
+        <input type="hidden" class="form-control" id="timestamps" name="timestamps" th:value="${timestamps}" readonly>
+        <input type="hidden" class="form-control" id="sign" name="sign" th:value="${sign}" readonly>
+    </form>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+</script>
+</body>
+</html>

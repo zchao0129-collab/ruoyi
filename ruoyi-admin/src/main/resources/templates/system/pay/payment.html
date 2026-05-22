@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('会员充值')" />
+    <style>
+        body { background-color: #f5f5f5; }
+        .container {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .form-horizontal {
+            margin: 0 auto;
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            border-color: #5cb85c;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background-color: #5cb85c;
+            border-color: #5cb85c;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active,
+        .btn-primary.active {
+            background-color: #449d44;
+            border-color: #449d44;
+        }
+    </style>
+</head>
+<body class="gray-bg">
+<div class="container">
+    <form class="form-horizontal m-t" id="form-order-add" th:action="${action_url}" method="post">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">充值中心：</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="yjamount" name="yjamount" th:value="${yjamount}" readonly>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-primary btn-block" >确认充值</button>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <td>
+                    <label class="col-sm-1 control-label" style="display: inline-block;">充值单号：</label>
+                </td>
+                <td>
+                    <div class="form-control-static" th:text="${orderNo}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="col-sm-2 control-label" style="display: inline-block;">充值大区：</label>
+                </td>
+                <td>
+                    <div class="form-control-static" th:text="${regionName}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="col-sm-1 control-label" style="display: inline-block;">角色名称：</label>
+                </td>
+                <td>
+                    <div class="form-control-static" th:text="${merchantOrderNo}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="col-sm-2 control-label">充值内容：</label>
+                </td>
+                <td>
+                    <div class="form-control-static" th:text="${remark}"></div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label class="col-sm-2 control-label">充值金额：</label>
+                </td>
+                <td>
+                    <div class="form-control-static" th:text="${yjamount}"></div>
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" class="form-control" id="appid" name="appid" th:value="${appid}" readonly>
+        <input type="hidden" class="form-control" id="subject" name="subject" th:value="${subject}" readonly>
+        <input type="hidden" class="form-control" id="merchantOrderNo" name="merchantOrderNo" th:value="${merchantOrderNo}" readonly>
+        <input type="hidden" class="form-control" id="remark" name="remark" th:value="${remark}" readonly>
+        <input type="hidden" class="form-control" id="regionName" name="regionName" th:value="${regionName}" readonly>
+        <input type="hidden" class="form-control" id="callbackUrl" name="callbackUrl" th:value="${callbackUrl}" readonly>
+        <input type="hidden" class="form-control" id="returnUrl" name="returnUrl" th:value="${returnUrl}" readonly>
+        <input type="hidden" class="form-control" id="amount" name="amount" th:value="${amount}" readonly>
+        <input type="hidden" class="form-control" id="method" name="method" th:value="${method}" readonly>
+        <input type="hidden" class="form-control" id="timestamps" name="timestamps" th:value="${timestamps}" readonly>
+        <input type="hidden" class="form-control" id="sign" name="sign" th:value="${sign}" readonly>
+    </form>
+</div>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    //var url = ctx + "/order/payOrder/";
+    // window.onload = function () {
+    //     var orderNo = $('#orderNo').val();
+    //     var toSign = $('#toSign').val();
+    //     window.location=getRootPath()+"/outside/order/payOrderInfo/"+orderNo+"/"+toSign;
+    // }
+
+    /*function submitPay() {
+        var url = getRootPath()+"/outside/pay/createOrderInfo";
+        var data = { "appid": $('#appid').val(),
+            "merchantOrderNo": $('#merchantOrderNo').val(),
+            "callbackUrl": $('#callbackUrl').val(),
+            "amount": $('#amount').val(),
+            "timestamps": $('#timestamps').val(),
+            "sign": $('#sign').val(),
+            "orderNo": $('#orderNo').val(),
+            "cashier": 0,
+            "method": 10,
+            "appid": $('#appid').val()};
+        $.operate.submit(url, "post", "json", data);
+    }*/
+    // 获取地址栏的绝对路径
+    // function getRootPath() {
+    //     var strFullPath = window.document.location.href;
+    //     var strPath = window.document.location.pathname;
+    //     var pos = strFullPath.indexOf(strPath);
+    //     var prePath = strFullPath.substring(0, pos);
+    //     var postPath = strPath.substring(0, strPath.substr(1).indexOf('/') + 1);
+    //     //return (prePath + postPath);
+    //     return prePath+"/outside/pay/createOrderInfo";
+    // }
+</script>
+</body>
+</html>

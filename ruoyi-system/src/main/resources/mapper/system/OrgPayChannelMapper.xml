@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrgPayChannelMapper">
+
+    <resultMap type="com.ruoyi.system.domain.OrgPayChannel" id="OrgPayChannelResult">
+        <result property="id"    column="id"    />
+        <result property="channelName"    column="channelName"    />
+        <result property="channelStatus"    column="channelStatus"    />
+        <result property="createrOrderUrl"    column="createrOrderUrl"    />
+        <result property="callbackUrl"    column="callbackUrl"    />
+        <result property="refundUrl"    column="refundUrl"    />
+        <result property="createdTime"    column="createdTime"    />
+    </resultMap>
+
+    <sql id="selectOrgPayChannelVo">
+        select id, channelName, channelStatus, createrOrderUrl, callbackUrl, refundUrl, createdTime from org_pay_channel
+    </sql>
+
+    <select id="selectOrgPayChannelList" parameterType="com.ruoyi.system.domain.OrgPayChannel" resultMap="OrgPayChannelResult">
+        <include refid="selectOrgPayChannelVo"/>
+        <where>
+            <if test="channelName != null  and channelName != ''"> and channelName like concat('%', #{channelName}, '%')</if>
+            <if test="channelStatus != null "> and channelStatus = #{channelStatus}</if>
+            <if test="createrOrderUrl != null  and createrOrderUrl != ''"> and createrOrderUrl = #{createrOrderUrl}</if>
+            <if test="callbackUrl != null  and callbackUrl != ''"> and callbackUrl = #{callbackUrl}</if>
+            <if test="refundUrl != null  and refundUrl != ''"> and refundUrl = #{refundUrl}</if>
+            <if test="createdTime != null "> and createdTime = #{createdTime}</if>
+        </where>
+    </select>
+
+    <select id="selectOrgPayChannelById" parameterType="Long" resultMap="OrgPayChannelResult">
+        <include refid="selectOrgPayChannelVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertOrgPayChannel" parameterType="com.ruoyi.system.domain.OrgPayChannel" useGeneratedKeys="true" keyProperty="id">
+        insert into org_pay_channel
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="channelName != null">channelName,</if>
+            <if test="channelStatus != null">channelStatus,</if>
+            <if test="createrOrderUrl != null">createrOrderUrl,</if>
+            <if test="callbackUrl != null">callbackUrl,</if>
+            <if test="refundUrl != null">refundUrl,</if>
+            <if test="createdTime != null">createdTime,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="channelName != null">#{channelName},</if>
+            <if test="channelStatus != null">#{channelStatus},</if>
+            <if test="createrOrderUrl != null">#{createrOrderUrl},</if>
+            <if test="callbackUrl != null">#{callbackUrl},</if>
+            <if test="refundUrl != null">#{refundUrl},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrgPayChannel" parameterType="com.ruoyi.system.domain.OrgPayChannel">
+        update org_pay_channel
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="channelName != null">channelName = #{channelName},</if>
+            <if test="channelStatus != null">channelStatus = #{channelStatus},</if>
+            <if test="createrOrderUrl != null">createrOrderUrl = #{createrOrderUrl},</if>
+            <if test="callbackUrl != null">callbackUrl = #{callbackUrl},</if>
+            <if test="refundUrl != null">refundUrl = #{refundUrl},</if>
+            <if test="createdTime != null">createdTime = #{createdTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrgPayChannelById" parameterType="Long">
+        delete from org_pay_channel where id = #{id}
+    </delete>
+
+    <delete id="deleteOrgPayChannelByIds" parameterType="String">
+        delete from org_pay_channel where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

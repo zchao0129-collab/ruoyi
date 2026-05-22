@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.TSafeTransferMapper">
+
+    <resultMap type="TSafeTransfer" id="TSafeTransferResult">
+        <result property="id"    column="id"    />
+        <result property="appId"    column="appId"    />
+        <result property="timestamp"    column="timestamp"    />
+        <result property="payeeInfoIdentity"    column="payeeInfoIdentity"    />
+        <result property="channelId"    column="channelId"    />
+        <result property="outBizNo"    column="outBizNo"    />
+        <result property="transAmount"    column="transAmount"    />
+        <result property="payeeInfoName"    column="payeeInfoName"    />
+        <result property="transferType"    column="transferType"    />
+        <result property="allowRiskLevel"    column="allowRiskLevel"    />
+        <result property="orderTitle"    column="orderTitle"    />
+        <result property="remark"    column="remark"    />
+        <result property="notifyUrl"    column="notifyUrl"    />
+        <result property="createTime"    column="createTime"    />
+        <result property="status"    column="status"    />
+        <result property="orderId"    column="order_id"    />
+        <result property="payFundOrderId"    column="payFundOrderId"    />
+        <result property="settleSerialNo"    column="settleSerialNo"    />
+        <result property="transDate"    column="transDate"    />
+        <result property="failReason"    column="failReason"    />
+        <result property="accountId"    column="accountId"    />
+        <result property="instName"    column="instName"    />
+        <result property="taskId"    column="taskId"    />
+    </resultMap>
+
+    <sql id="selectTSafeTransferVo">
+        select id, appId, timestamp, payeeInfoIdentity, channelId, outBizNo, transAmount, payeeInfoName, transferType, allowRiskLevel, orderTitle, remark, notifyUrl, createTime, status, order_id, payFundOrderId, settleSerialNo, transDate, failReason, accountId, instName, taskId from t_safe_transfer
+    </sql>
+
+    <select id="selectTSafeTransferList" parameterType="TSafeTransfer" resultMap="TSafeTransferResult">
+        <include refid="selectTSafeTransferVo"/>
+        <where>
+            <if test="appId != null  and appId != ''"> and appId = #{appId}</if>
+            <if test="timestamp != null "> and timestamp = #{timestamp}</if>
+            <if test="payeeInfoIdentity != null  and payeeInfoIdentity != ''"> and payeeInfoIdentity = #{payeeInfoIdentity}</if>
+            <if test="channelId != null "> and channelId = #{channelId}</if>
+            <if test="outBizNo != null  and outBizNo != ''"> and outBizNo = #{outBizNo}</if>
+            <if test="transAmount != null "> and transAmount = #{transAmount}</if>
+            <if test="payeeInfoName != null  and payeeInfoName != ''"> and payeeInfoName like concat('%', #{payeeInfoName}, '%')</if>
+            <if test="transferType != null  and transferType != ''"> and transferType = #{transferType}</if>
+            <if test="allowRiskLevel != null  and allowRiskLevel != ''"> and allowRiskLevel = #{allowRiskLevel}</if>
+            <if test="orderTitle != null  and orderTitle != ''"> and orderTitle = #{orderTitle}</if>
+            <if test="notifyUrl != null  and notifyUrl != ''"> and notifyUrl = #{notifyUrl}</if>
+            <if test="createTime != null "> and createTime = #{createTime}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="orderId != null  and orderId != ''"> and order_id = #{orderId}</if>
+            <if test="payFundOrderId != null  and payFundOrderId != ''"> and payFundOrderId = #{payFundOrderId}</if>
+            <if test="settleSerialNo != null  and settleSerialNo != ''"> and settleSerialNo = #{settleSerialNo}</if>
+            <if test="transDate != null "> and transDate = #{transDate}</if>
+            <if test="failReason != null  and failReason != ''"> and failReason = #{failReason}</if>
+            <if test="accountId != null  and accountId != ''"> and accountId = #{accountId}</if>
+            <if test="instName != null  and instName != ''"> and instName like concat('%', #{instName}, '%')</if>
+            <if test="taskId != null  and taskId != ''"> and taskId = #{taskId}</if>
+        </where>
+        order by createTime desc
+    </select>
+
+    <select id="selectTSafeTransferById" parameterType="Long" resultMap="TSafeTransferResult">
+        <include refid="selectTSafeTransferVo"/>
+        where id = #{id}
+    </select>
+
+
+    <select id="selectTSafeTransferByOrderId" parameterType="String" resultMap="TSafeTransferResult">
+        <include refid="selectTSafeTransferVo"/>
+        where order_id = #{orderId}
+    </select>
+
+
+    <insert id="insertTSafeTransfer" parameterType="TSafeTransfer" useGeneratedKeys="true" keyProperty="id">
+        insert into t_safe_transfer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appId != null">appId,</if>
+            <if test="timestamp != null">timestamp,</if>
+            <if test="payeeInfoIdentity != null">payeeInfoIdentity,</if>
+            <if test="channelId != null">channelId,</if>
+            <if test="outBizNo != null">outBizNo,</if>
+            <if test="transAmount != null">transAmount,</if>
+            <if test="payeeInfoName != null">payeeInfoName,</if>
+            <if test="transferType != null">transferType,</if>
+            <if test="allowRiskLevel != null">allowRiskLevel,</if>
+            <if test="orderTitle != null">orderTitle,</if>
+            <if test="remark != null">remark,</if>
+            <if test="notifyUrl != null">notifyUrl,</if>
+            <if test="createTime != null">createTime,</if>
+            <if test="status != null">status,</if>
+            <if test="orderId != null">order_id,</if>
+            <if test="payFundOrderId != null">payFundOrderId,</if>
+            <if test="settleSerialNo != null">settleSerialNo,</if>
+            <if test="transDate != null">transDate,</if>
+            <if test="failReason != null">failReason,</if>
+            <if test="accountId != null">accountId,</if>
+            <if test="instName != null">instName,</if>
+            <if test="taskId != null">taskId,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appId != null">#{appId},</if>
+            <if test="timestamp != null">#{timestamp},</if>
+            <if test="payeeInfoIdentity != null">#{payeeInfoIdentity},</if>
+            <if test="channelId != null">#{channelId},</if>
+            <if test="outBizNo != null">#{outBizNo},</if>
+            <if test="transAmount != null">#{transAmount},</if>
+            <if test="payeeInfoName != null">#{payeeInfoName},</if>
+            <if test="transferType != null">#{transferType},</if>
+            <if test="allowRiskLevel != null">#{allowRiskLevel},</if>
+            <if test="orderTitle != null">#{orderTitle},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="notifyUrl != null">#{notifyUrl},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="status != null">#{status},</if>
+            <if test="orderId != null">#{orderId},</if>
+            <if test="payFundOrderId != null">#{payFundOrderId},</if>
+            <if test="settleSerialNo != null">#{settleSerialNo},</if>
+            <if test="transDate != null">#{transDate},</if>
+            <if test="failReason != null">#{failReason},</if>
+            <if test="accountId != null">#{accountId},</if>
+            <if test="instName != null">#{instName},</if>
+            <if test="taskId != null">#{taskId},</if>
+        </trim>
+    </insert>
+
+    <update id="updateTSafeTransfer" parameterType="TSafeTransfer">
+        update t_safe_transfer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="appId != null">appId = #{appId},</if>
+            <if test="timestamp != null">timestamp = #{timestamp},</if>
+            <if test="payeeInfoIdentity != null">payeeInfoIdentity = #{payeeInfoIdentity},</if>
+            <if test="channelId != null">channelId = #{channelId},</if>
+            <if test="outBizNo != null">outBizNo = #{outBizNo},</if>
+            <if test="transAmount != null">transAmount = #{transAmount},</if>
+            <if test="payeeInfoName != null">payeeInfoName = #{payeeInfoName},</if>
+            <if test="transferType != null">transferType = #{transferType},</if>
+            <if test="allowRiskLevel != null">allowRiskLevel = #{allowRiskLevel},</if>
+            <if test="orderTitle != null">orderTitle = #{orderTitle},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="notifyUrl != null">notifyUrl = #{notifyUrl},</if>
+            <if test="createTime != null">createTime = #{createTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="orderId != null">order_id = #{orderId},</if>
+            <if test="payFundOrderId != null">payFundOrderId = #{payFundOrderId},</if>
+            <if test="settleSerialNo != null">settleSerialNo = #{settleSerialNo},</if>
+            <if test="transDate != null">transDate = #{transDate},</if>
+            <if test="failReason != null">failReason = #{failReason},</if>
+            <if test="accountId != null">accountId = #{accountId},</if>
+            <if test="instName != null">instName = #{instName},</if>
+            <if test="taskId != null">taskId = #{taskId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTSafeTransferById" parameterType="Long">
+        delete from t_safe_transfer where id = #{id}
+    </delete>
+
+    <delete id="deleteTSafeTransferByIds" parameterType="String">
+        delete from t_safe_transfer where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

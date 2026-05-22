@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrgMerchantMapper">
+
+    <resultMap type="com.ruoyi.system.domain.OrgMerchant" id="OrgMerchantResult">
+        <result property="id"    column="id"    />
+        <result property="merchantName"    column="merchantName"    />
+        <result property="merchantStatus"    column="merchantStatus"    />
+        <result property="merchantPhone"    column="merchantPhone"    />
+        <result property="merchantType"    column="merchantType"    />
+        <result property="createdTime"    column="createdTime"    />
+    </resultMap>
+
+    <sql id="selectOrgMerchantVo">
+        select id, merchantName, merchantStatus, merchantPhone, merchantType, createdTime from org_merchant
+    </sql>
+
+    <select id="selectOrgMerchantList" parameterType="com.ruoyi.system.domain.OrgMerchant" resultMap="OrgMerchantResult">
+        <include refid="selectOrgMerchantVo"/>
+        <where>
+            <if test="merchantName != null  and merchantName != ''"> and merchantName like concat('%', #{merchantName}, '%')</if>
+            <if test="merchantStatus != null "> and merchantStatus = #{merchantStatus}</if>
+            <if test="merchantPhone != null  and merchantPhone != ''"> and merchantPhone = #{merchantPhone}</if>
+            <if test="merchantType != null  and merchantType != ''"> and merchantType = #{merchantType}</if>
+            <if test="createdTime != null "> and createdTime = #{createdTime}</if>
+        </where>
+    </select>
+
+    <select id="selectOrgMerchantById" parameterType="Long" resultMap="OrgMerchantResult">
+        <include refid="selectOrgMerchantVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectOrgMerchantByMerchantId" resultType="com.ruoyi.system.domain.OrgMerchant">
+        <include refid="selectOrgMerchantVo"/>
+        where MerchantId = #{MerchantId}
+    </select>
+
+    <insert id="insertOrgMerchant" parameterType="com.ruoyi.system.domain.OrgMerchant" useGeneratedKeys="true" keyProperty="id">
+        insert into org_merchant
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="merchantName != null">merchantName,</if>
+            <if test="merchantStatus != null">merchantStatus,</if>
+            <if test="merchantPhone != null">merchantPhone,</if>
+            <if test="merchantType != null">merchantType,</if>
+            <if test="createdTime != null">createdTime,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="merchantName != null">#{merchantName},</if>
+            <if test="merchantStatus != null">#{merchantStatus},</if>
+            <if test="merchantPhone != null">#{merchantPhone},</if>
+            <if test="merchantType != null">#{merchantType},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrgMerchant" parameterType="com.ruoyi.system.domain.OrgMerchant">
+        update org_merchant
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="merchantName != null">merchantName = #{merchantName},</if>
+            <if test="merchantStatus != null">merchantStatus = #{merchantStatus},</if>
+            <if test="merchantPhone != null">merchantPhone = #{merchantPhone},</if>
+            <if test="merchantType != null">merchantType = #{merchantType},</if>
+            <if test="createdTime != null">createdTime = #{createdTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrgMerchantById" parameterType="Long">
+        delete from org_merchant where id = #{id}
+    </delete>
+
+    <delete id="deleteOrgMerchantByIds" parameterType="String">
+        delete from org_merchant where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

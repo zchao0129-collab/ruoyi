@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('订单列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>客户名称：</label>
+                                <input type="text" name="accountName"/>
+                            </li>
+                            <li>
+                                <label>通道名称：</label>
+                                <input type="text" name="channelName"/>
+                            </li>
+                            <li>
+                                <label>商户名称：</label>
+                                <input type="text" name="merchantName"/>
+                            </li>
+                            <li>
+                                <label>订单号：</label>
+                                <input type="text" name="orderNo"/>
+                            </li>
+                            <li>
+                                <label>客户单号：</label>
+                                <input type="text" name="accountOrderNo"/>
+                            </li>
+                            <li>
+                                <label>支付宝订单号：</label>
+                                <input type="text" name="merchanOrderNo"/>
+                            </li>
+                            <li>
+                                <label>支付方式：</label>
+                                <input type="text" name="method"/>
+                            </li>
+
+
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+            <div class="btn-group-sm" id="toolbar" role="group">
+<!--                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="system:order:add">-->
+<!--                    <i class="fa fa-plus"></i> 添加-->
+<!--                </a>-->
+<!--                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="system:order:edit">-->
+<!--                    <i class="fa fa-edit"></i> 修改-->
+<!--                </a>-->
+<!--                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="system:order:remove">-->
+<!--                    <i class="fa fa-remove"></i> 删除-->
+<!--                </a>-->
+                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="system:order:export">
+                    <i class="fa fa-download"></i> 导出
+                </a>
+            </div>
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:order:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:order:remove')}]];
+        var payStatus = [[${@dict.getType('sys_pay_status')}]];
+        var callbackStatus = [[${@dict.getType('sys_callback_status')}]];
+        var callbackFlag = [[${@permission.hasPermi('system:order:callbackOrder')}]];
+        var refundOrderFlag = [[${@permission.hasPermi('system:order:refundOrder')}]];
+        var queryOrderFlag = [[${@permission.hasPermi('system:order:queryOrder')}]];
+        var payType = [[${@dict.getType('sys_pay_type')}]];
+        var prefix = ctx + "system/order";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                callbackUrl: prefix + "/callbackOrder/",
+                queryOrderUrl: prefix + "/queryOrder/",
+                refundOrderUrl: prefix + "/refundOrder/",
+                modalName: "订单",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'id',
+                    title: 'ID',
+                    visible: false
+                },
+                {
+                    field: 'accountId',
+                    title: '客户ID',
+                    visible: false
+                },
+                {
+                    field: 'accountName',
+                    title: '客户名称'
+                },
+                {
+                    field: 'channelId',
+                    title: '通道ID',
+                    visible: false
+                },
+                {
+                    field: 'channelName',
+                    title: '通道名称'
+                },
+                {
+                    field: 'merchantId',
+                    title: '商户ID',
+                    visible: false
+                },
+                {
+                    field: 'merchantName',
+                    title: '商户名称'
+                },
+                {
+                    field: 'merchantNo',
+                    title: '商户编号'
+                },
+                {
+                    field: 'orderNo',
+                    title: '订单号'
+                },
+                {
+                    field: 'accountOrderNo',
+                    title: '客户订单号'
+                },
+                {
+                    field: 'merchanOrderNo',
+                    title: '商户订单号'
+                },
+                {
+                    field: 'amount',
+                    title: '订单金额'
+                },
+                {
+                    field: 'yjamount',
+                    title: '订单金额1'
+                },
+                {
+                    field: 'uid',
+                    title: '支付UID'
+                },
+                {
+                    field: 'method',
+                    title: '支付方式',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(payType, value);
+                    },
+                    visible: false
+                },
+                {
+                    field: 'payUrl',
+                    title: '支付地址',
+                    formatter: function(value, row, index) {
+                        return $.table.tooltip(value);
+                    },
+                    visible: false
+                },
+                {
+                    field: 'callbackUrl',
+                    title: '回调地址',
+                    formatter: function(value, row, index) {
+                        return $.table.tooltip(value);
+                    }
+                },
+                {
+                    field: 'callbackStatus',
+                    title: '回调状态',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(callbackStatus, value);
+                    }
+                },
+                {
+                    field: 'callbackTime',
+                    title: '回调时间'
+                },
+                {
+                    field: 'returnUrl',
+                    title: '跳转地址',
+                    formatter: function(value, row, index) {
+                        return $.table.tooltip(value);
+                    }
+                },
+                {
+                    field: 'bodys',
+                    title: '订单内容',
+                    formatter: function(value, row, index) {
+                        return $.table.tooltip(value);
+                    },
+                    visible: false
+                },
+                {
+                    field: 'response',
+                    title: 'response',
+                    visible: false
+                },
+                {
+                    field: 'orderKey',
+                    title: 'orderKey',
+                    visible: false
+                },
+                {
+                    field: 'orderStatus',
+                    title: '订单状态',
+                    formatter: function(value, row, index) {
+                        return $.table.selectDictLabel(payStatus, value);
+                    }
+                },
+                {
+                    field: 'completionTime',
+                    title: '支付时间'
+                },
+                {
+                    field: 'returnTime',
+                    title: '退款时间',
+                    visible: false
+                },
+                {
+                    field: 'createTime',
+                    title: '创建时间'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        if(row.orderStatus == 1 ){
+                            actions.push('<a class="btn btn-danger btn-xs ' + callbackFlag + '" href="javascript:void(0)" onclick="callbackOrder(\'' + row.id + '\')">回调</a>');
+                            actions.push('<a class="btn btn-danger btn-xs ' + refundOrderFlag + '" href="javascript:void(0)" onclick="refundOrder(\'' + row.id + '\')">退款</a>');
+                        }
+                        actions.push('<a class="btn btn-danger btn-xs ' + queryOrderFlag + '" href="javascript:void(0)" onclick="queryOrder(\'' + row.id + '\')">查询</a>');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+
+        function callbackOrder(id) {
+            table.set();
+            var url = table.options.callbackUrl+id;
+            $.operate.submit(url, "get", "json", '');
+        }
+
+        function refundOrder(id) {
+            table.set();
+            var url = table.options.refundOrderUrl+id;
+            $.operate.submit(url, "get", "json", '');
+        }
+
+        function queryOrder(id) {
+            table.set();
+            var url = table.options.queryOrderUrl+id;
+            $.operate.submit(url, "get", "json", '');
+        }
+
+    </script>
+</body>
+</html>

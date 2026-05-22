@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrgChannelMerchantMapper">
+
+    <resultMap type="com.ruoyi.system.domain.OrgChannelMerchant" id="OrgChannelMerchantResult">
+        <result property="id"    column="id"    />
+        <result property="channelId"    column="channelId"    />
+        <result property="channelName"    column="channelName"    />
+        <result property="createrOrderUrl"    column="createrOrderUrl"    />
+        <result property="callbackUrl"    column="callbackUrl"    />
+        <result property="merchantId"    column="merchantId"    />
+        <result property="merchantNo"    column="merchantNo"    />
+        <result property="merchantName"    column="merchantName"    />
+        <result property="merchanKey"    column="merchanKey"    />
+        <result property="publicKey"    column="publicKey"    />
+        <result property="privateKey"    column="privateKey"    />
+        <result property="passPublicKey"    column="passPublicKey"    />
+        <result property="totleAmount"    column="totleAmount"    />
+        <result property="totleTodayAmount"    column="totleTodayAmount"    />
+        <result property="totleToday"    column="totleToday"    />
+        <result property="merchantChannelStatus"    column="merchantChannelStatus"    />
+    </resultMap>
+
+    <sql id="selectOrgChannelMerchantVo">
+        select id, channelId,(select channelName from org_pay_channel where id = channelId ) as channelName , merchantId,
+               (select merchantName from org_merchant where id = merchantId ) as merchantName, merchantNo,
+               merchanKey, publicKey, privateKey, passPublicKey,
+               (
+                   SELECT
+                       totleAmount
+                   FROM
+                       (
+                           SELECT
+                               sum(ooi.amount) AS totleAmount,
+                               ooi.merchantId,
+                               ooi.channelId
+                           FROM
+                               org_order_info ooi
+                           WHERE
+                               ooi.orderStatus = 1
+                           GROUP BY
+                               ooi.merchantId,
+                               ooi.channelId
+                       ) s
+                   WHERE
+                       s.channelId = ocm.channelId
+                     AND s.merchantId = ocm.merchantId
+               ) AS totleAmount,
+               (
+                   SELECT
+                       sum(a.amount)
+                   FROM
+                       (
+                           SELECT
+                               date(ooi.createTime),
+                       ooi.merchantId,
+                       ooi.channelId,
+                       ooi.amount
+        FROM
+            org_order_info ooi
+        WHERE
+            ooi.orderStatus = 1
+          AND date(ooi.createTime) = curdate()
+        GROUP BY
+            ooi.createTime,
+            ooi.merchantId,
+            ooi.channelId,
+            ooi.amount
+            ) a
+        WHERE
+            a.channelId = ocm.channelId
+          AND a.merchantId = ocm.merchantId
+            ) AS totleTodayAmount,
+            curdate() AS totleToday,
+               merchantChannelStatus from org_channel_merchant ocm
+    </sql>
+
+
+    <select id="selectOrgChannelMerchantList" parameterType="com.ruoyi.system.domain.OrgChannelMerchant" resultMap="OrgChannelMerchantResult">
+        <include refid="selectOrgChannelMerchantVo"/>
+        <where>
+            <if test="channelId != null  and channelId != ''"> and channelId = #{channelId}</if>
+            <if test="channelName != null  and channelName != ''"> and channelId in (select id from org_pay_channel where channelName like concat('%', #{channelName}, '%'))</if>
+            <if test="merchantId != null  and merchantId != ''"> and merchantId = #{merchantId}</if>
+            <if test="merchantName != null  and merchantName != ''"> and merchantId in (select id from org_merchant where merchantName like concat('%', #{merchantName}, '%'))</if>
+            <if test="merchantNo != null  and merchantNo != ''"> and merchantNo = #{merchantNo}</if>
+            <if test="merchanKey != null  and merchanKey != ''"> and merchanKey = #{merchanKey}</if>
+            <if test="publicKey != null  and publicKey != ''"> and publicKey = #{publicKey}</if>
+            <if test="privateKey != null  and privateKey != ''"> and privateKey = #{privateKey}</if>
+            <if test="passPublicKey != null  and passPublicKey != ''"> and passPublicKey = #{passPublicKey}</if>
+            <if test="totleAmount != null "> and totleAmount = #{totleAmount}</if>
+            <if test="totleTodayAmount != null "> and totleTodayAmount = #{totleTodayAmount}</if>
+            <if test="totleToday != null and totleToday!= ''"> and totleToday = #{totleToday}</if>
+            <if test="merchantChannelStatus != null "> and merchantChannelStatus = #{merchantChannelStatus}</if>
+        </where>
+    </select>
+
+    <select id="selectOrgChannelMerchantById" parameterType="Long" resultMap="OrgChannelMerchantResult">
+        <include refid="selectOrgChannelMerchantVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectByMerchantIdChannelId" parameterType="com.ruoyi.system.domain.OrgChannelMerchant" resultType="com.ruoyi.system.domain.OrgChannelMerchant">
+        <include refid="selectOrgChannelMerchantVo"/> where merchantId = #{merchantId} and channelId = #{channelId}
+    </select>
+
+    <select id="selectCollectionRatioDesc" resultType="com.ruoyi.system.domain.OrgChannelMerchant">
+        <include refid="selectOrgChannelMerchantVo"/>
+        <where>
+            and merchantChannelStatus = 1
+        </where>
+
+    </select>
+
+    <insert id="insertOrgChannelMerchant" parameterType="com.ruoyi.system.domain.OrgChannelMerchant" useGeneratedKeys="true" keyProperty="id">
+        insert into org_channel_merchant
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="channelId != null">channelId,</if>
+            <if test="merchantId != null">merchantId,</if>
+            <if test="merchantNo != null">merchantNo,</if>
+            <if test="merchanKey != null">merchanKey,</if>
+            <if test="publicKey != null">publicKey,</if>
+            <if test="privateKey != null">privateKey,</if>
+            <if test="passPublicKey != null">passPublicKey,</if>
+            <if test="totleAmount != null">totleAmount,</if>
+            <if test="totleTodayAmount != null">totleTodayAmount,</if>
+            <if test="totleToday != null">totleToday,</if>
+            <if test="merchantChannelStatus != null">merchantChannelStatus,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="channelId != null">#{channelId},</if>
+            <if test="merchantId != null">#{merchantId},</if>
+            <if test="merchantNo != null">#{merchantNo},</if>
+            <if test="merchanKey != null">#{merchanKey},</if>
+            <if test="publicKey != null">#{publicKey},</if>
+            <if test="privateKey != null">#{privateKey},</if>
+            <if test="passPublicKey != null">#{passPublicKey},</if>
+            <if test="totleAmount != null">#{totleAmount},</if>
+            <if test="totleTodayAmount != null">#{totleTodayAmount},</if>
+            <if test="totleToday != null">#{totleToday},</if>
+            <if test="merchantChannelStatus != null">#{merchantChannelStatus},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrgChannelMerchant" parameterType="com.ruoyi.system.domain.OrgChannelMerchant">
+        update org_channel_merchant
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="channelId != null">channelId = #{channelId},</if>
+            <if test="merchantId != null">merchantId = #{merchantId},</if>
+            <if test="merchantNo != null">merchantNo = #{merchantNo},</if>
+            <if test="merchanKey != null">merchanKey = #{merchanKey},</if>
+            <if test="publicKey != null">publicKey = #{publicKey},</if>
+            <if test="privateKey != null">privateKey = #{privateKey},</if>
+            <if test="passPublicKey != null">passPublicKey = #{passPublicKey},</if>
+            <if test="totleAmount != null">totleAmount = #{totleAmount},</if>
+            <if test="totleTodayAmount != null">totleTodayAmount = #{totleTodayAmount},</if>
+            <if test="totleToday != null">totleToday = #{totleToday},</if>
+            <if test="merchantChannelStatus != null">merchantChannelStatus = #{merchantChannelStatus},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrgChannelMerchantById" parameterType="Long">
+        delete from org_channel_merchant where id = #{id}
+    </delete>
+
+    <delete id="deleteOrgChannelMerchantByIds" parameterType="String">
+        delete from org_channel_merchant where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="selectOrgChannelMerchantByMerchantNo" parameterType="com.ruoyi.system.domain.OrgChannelMerchant" resultMap="OrgChannelMerchantResult">
+        select merchantNo,merchanKey from org_channel_merchant ocm where merchantNo = #{merchantNo}
+    </select>
+
+</mapper>

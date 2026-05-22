@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('会员充值')" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>在线充值</title>
+
+    <style>
+        body{margin: 0;padding: 0;background-color: #def1ff;}
+        .meilian_top{position: fixed;overflow: hidden;width: 100%;height: 220px;background-color: #54aceb;box-sizing: border-box;padding: 10px;}
+        .meilian_top_s1{position: absolute;overflow: hidden;width: 100%;text-align: center;font-size: 26px;color: #fff;top: 70px;}
+        .meilian_top_s1 i{color: #ffff00;font-weight: bold;}
+        .meilian_top_s2{position: absolute;overflow: hidden;top: 120px;font-size: 24px;text-align: center;width: 100%;color: #f9f9bb;}
+        .meilian_ban{position: fixed;overflow: hidden;width: 100%;height: 50px;background-color: #fff;top: 220px;border-bottom: 1px solid #d9d9d9;box-sizing: border-box;padding: 0px 10px;}
+        .meilian_ban_s1{width: 10%;float: left;}
+        .meilian_ban_s1 img{height: 25px;margin-top: 12.5px;}
+        .meilian_ban_s2{width: 90%;float: left;height: 100%;}
+        .meilian_ban_s2 input{width: 100%;height: 100%;overflow: hidden;box-sizing: border-box;border: 0;outline: none;}
+        .meilian_zhifu{position: fixed;width: 100%;top: 300px;height: 105px;border-radius: 4px;}
+        .meilian_zhifu_item{width: 29.33%;height: 100%;overflow: hidden;float: left;margin-left: 3%;background-color: rgba(201, 217, 229, 0.5);text-align: center;font-size: 14px;border-radius: 5px;}
+        .meilian_zhifu_item_ico{width: 100%;margin-top: 20px;}
+        .meilian_zhifu_bnt{position: fixed;overflow: hidden;top: 440px;left: 15px;right: 15px;background-color: #54aceb;height: 40px;line-height: 40px;text-align: center;color: #fff;font-size: 14px;border-radius: 4px;box-sizing: border-box;box-shadow: #54aceb 0px 0px 5px;outline:none;}
+        .meilian_zhifu_bnts{width:100%;height:100%;line-height: 40px;text-align: center;color: #fff;font-size: 14px;border-radius: 4px;background-color: #54aceb;border:0;}
+        .meilian{border: 1px solid #e1e1e1;background-color: #dedede;box-sizing: border-box;}
+        .kf_box{position:fixed;z-index:99999;top:20px;right:20px;text-align:right;color:#fff;font-size:18px}
+        .kf_box span{color:#ffff00}
+    </style>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+</head>
+<body>
+<div class="kf_box">客服联系QQ：<span>1317101768</span></div>
+<div class="meilian_ban">
+    <div class="meilian_ban_s1"><img src="img/lianxiren.png"></div>
+    <div class="meilian_ban_s2">
+        <input type="text" name="GameUserContact" value="" placeholder="请务必填写QQ号，游戏问题或不到账方便客服与您联系" />
+    </div>
+</div>
+<div class="meilian_zhifu">
+    <div class="meilian_zhifu_item meilian" id="py1" onclick="payid(1)">
+        <div class="meilian_zhifu_item_ico"><img src="img/logo_2.png"></div>
+        <div class="meilian_zhifu_item_name">微信支付</div>
+    </div>
+    <div class="meilian_zhifu_item" id="py2" onclick="payid(2)">
+        <div class="meilian_zhifu_item_ico"><img src="img/logo_1.png"></div>
+        <div class="meilian_zhifu_item_name">支付宝WAP</div>
+    </div>
+    <div class="meilian_zhifu_item" id="py3" onclick="payid(3)">
+        <div class="meilian_zhifu_item_ico"><img src="img/logo_1.png"></div>
+        <div class="meilian_zhifu_item_name">支付宝扫码</div>
+    </div>
+</div>
+
+<form action="http://localhost:8099/outside/pay/alipay" method="post" >
+    <input type="hidden" class="form-control" id="orderNo" name="orderNo" th:value="${orderNo}" >
+    <input type="hidden" class="form-control" id="accountName" name="accountName" th:value="${regionName}" >
+    <input type="hidden" class="form-control" id="remark" name="remark" th:value="${remark}" >
+    <input type="hidden" class="form-control" id="appid" name="appid" th:value="${appid}" >
+    <input type="hidden" class="form-control" id="merchantOrderNo" name="merchantOrderNo" th:value="${merchantOrderNo}" >
+    <input type="hidden" class="form-control" id="callbackUrl" name="callbackUrl" th:value="${callbackUrl}" >
+    <input type="hidden" class="form-control" id="yjAmount" name="yjAmount" th:value="${yjAmount}" >
+    <input type="hidden" class="form-control" id="method" name="method" th:value="${method}" >
+    <input type="hidden" class="form-control" id="timestamps" name="timestamps" th:value="${timestamps}" >
+    <input type="hidden" class="form-control" id="sign" name="sign" th:value="${sign}" >
+    <label class="col-sm-3 control-label">充值中心：</label>
+    <div class="col-sm-9">
+        <input type="text" class="form-control" id="amount" name="amount" th:value="${amount}" >
+    </div>
+    <div class="meilian_zhifu_bnt">
+        <button type="submit" class="meilian_zhifu_bnts">立 即 支 付</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    function submitPay() {
+        var url = "http://localhost:8099/outside/pay/alipay";
+        var data = { "appid": $('#appid').val(),
+            "merchantOrderNo": $('#merchantOrderNo').val(),
+            "callbackUrl": $('#callbackUrl').val(),
+            "amount": $('#amount').val(),
+            "timestamps": $('#timestamps').val(),
+            "sign": $('#sign').val(),
+            "orderNo": $('#orderNo').val(),
+            "cashier": 0,
+            "method": $('#method').val(),
+            "appid": $('#appid').val()};
+        $.operate.submit(url, "post", "json", data);
+    }
+    // 获取地址栏的绝对路径
+    function getRootPath() {
+        var strFullPath = window.document.location.href;
+        var strPath = window.document.location.pathname;
+        var pos = strFullPath.indexOf(strPath);
+        var prePath = strFullPath.substring(0, pos);
+        var postPath = strPath.substring(0, strPath.substr(1).indexOf('/') + 1);
+        //return (prePath + postPath);
+        return prePath;
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrgAccountMapper">
+
+    <resultMap type="com.ruoyi.system.domain.OrgAccount" id="OrgAccountResult">
+        <result property="id"    column="id"    />
+        <result property="accountName"    column="accountName"    />
+        <result property="accountPwd"    column="accountPwd"    />
+        <result property="accountAppId"    column="accountAppId"    />
+        <result property="accountStatus"    column="accountStatus"    />
+        <result property="accountToken"    column="accountToken"    />
+        <result property="createdTime"    column="createdTime"    />
+        <result property="totleTodayAmount"    column="totleTodayAmount"    />
+        <result property="totleTodayYjAmount"    column="totleTodayYjAmount"    />
+        <result property="totleAmount"    column="totleAmount"    />
+        <result property="totleYjAmount"    column="totleYjAmount"    />
+        <result property="cashier"    column="cashier"    />
+        <result property="payChannel"    column="payChannel"    />
+    </resultMap>
+
+    <sql id="selectOrgAccountVo">
+        select id, cashier,payChannel,accountName, accountPwd, accountAppId, accountStatus, accountToken, createdTime from org_account
+    </sql>
+
+    <select id="selectOrgAccountList" parameterType="com.ruoyi.system.domain.OrgAccount" resultMap="OrgAccountResult">
+        select t1.id, t1.cashier,t1.payChannel,t1.accountName, t1.accountPwd, t1.accountAppId, t1.accountStatus, t1.accountToken, t1.createdTime,t2.totleTodayAmount,t2.totleTodayYjAmount,t3.totleAmount,t3.totleYjAmount from org_account t1
+        left join
+        (
+            SELECT
+            date(ooi.createTime),
+            ooi.accountAppId,
+            sum(ooi.amount) as totleTodayAmount,
+            sum(ooi.yjamount) as totleTodayYjAmount
+            FROM
+            org_order_info ooi
+            WHERE
+            ooi.orderStatus = 1
+            AND date(ooi.createTime) = curdate()
+            GROUP BY
+            date(ooi.createTime),
+            ooi.accountAppId
+        )  t2 on t1.accountAppId = t2.accountAppId
+        left join
+        (
+            SELECT
+            ooi.accountAppId,
+            sum(ooi.amount) as totleAmount,
+            sum(ooi.yjamount) as totleYjAmount
+            FROM
+            org_order_info ooi
+            WHERE
+            ooi.orderStatus = 1
+            GROUP BY
+            ooi.accountAppId
+        )  t3 on t1.accountAppId = t3.accountAppId
+        <where>
+            <if test="accountName != null  and accountName != ''"> and t1.accountName like concat('%', #{accountName}, '%')</if>
+            <if test="accountPwd != null  and accountPwd != ''"> and t1.accountPwd = #{accountPwd}</if>
+            <if test="accountAppId != null  and accountAppId != ''"> and t1.accountAppId = #{accountAppId}</if>
+            <if test="accountStatus != null "> and t1.accountStatus = #{accountStatus}</if>
+            <if test="accountToken != null  and accountToken != ''"> and t1.accountToken = #{accountToken}</if>
+            <if test="createdTime != null "> and t1.createdTime = #{createdTime}</if>
+        </where>
+    </select>
+
+    <select id="selectOrgAccountById" parameterType="Long" resultMap="OrgAccountResult">
+        <include refid="selectOrgAccountVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectOne" resultType="com.ruoyi.system.domain.OrgAccount">
+        <include refid="selectOrgAccountVo"/>
+        <where>
+            <if test="accountName != null  and accountName != ''"> and accountName like concat('%', #{accountName}, '%')</if>
+            <if test="accountPwd != null  and accountPwd != ''"> and accountPwd = #{accountPwd}</if>
+            <if test="accountAppId != null  and accountAppId != ''"> and accountAppId = #{accountAppId}</if>
+            <if test="accountStatus != null "> and accountStatus = #{accountStatus}</if>
+            <if test="accountToken != null  and accountToken != ''"> and accountToken = #{accountToken}</if>
+            <if test="createdTime != null "> and createdTime = #{createdTime}</if>
+        </where>
+        limit 1
+    </select>
+    <insert id="insertOrgAccount" parameterType="com.ruoyi.system.domain.OrgAccount" useGeneratedKeys="true" keyProperty="id">
+        insert into org_account
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="accountName != null">accountName,</if>
+            <if test="accountPwd != null">accountPwd,</if>
+            <if test="accountAppId != null">accountAppId,</if>
+            <if test="accountStatus != null">accountStatus,</if>
+            <if test="accountToken != null">accountToken,</if>
+            <if test="createdTime != null">createdTime,</if>
+            <if test="cashier != null">cashier,</if>
+            <if test="payChannel != null">payChannel,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="accountName != null">#{accountName},</if>
+            <if test="accountPwd != null">#{accountPwd},</if>
+            <if test="accountAppId != null">#{accountAppId},</if>
+            <if test="accountStatus != null">#{accountStatus},</if>
+            <if test="accountToken != null">#{accountToken},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+            <if test="cashier != null">#{cashier},</if>
+            <if test="payChannel != null">#{payChannel},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrgAccount" parameterType="com.ruoyi.system.domain.OrgAccount">
+        update org_account
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="accountName != null">accountName = #{accountName},</if>
+            <if test="accountPwd != null">accountPwd = #{accountPwd},</if>
+            <if test="accountAppId != null">accountAppId = #{accountAppId},</if>
+            <if test="accountStatus != null">accountStatus = #{accountStatus},</if>
+            <if test="accountToken != null">accountToken = #{accountToken},</if>
+            <if test="createdTime != null">createdTime = #{createdTime},</if>
+            <if test="cashier != null">cashier = #{cashier},</if>
+            <if test="payChannel != null">payChannel = #{payChannel},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrgAccountById" parameterType="Long">
+        delete from org_account where id = #{id}
+    </delete>
+
+    <delete id="deleteOrgAccountByIds" parameterType="String">
+        delete from org_account where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

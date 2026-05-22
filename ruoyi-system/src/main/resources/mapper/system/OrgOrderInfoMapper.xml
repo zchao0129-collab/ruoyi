@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.OrgOrderInfoMapper">
+
+    <resultMap type="com.ruoyi.system.domain.OrgOrderInfo" id="OrgOrderInfoResult">
+        <result property="id"    column="id"    />
+        <result property="uid"    column="uid"    />
+        <result property="accountAppId"    column="accountAppId"    />
+        <result property="accountId"    column="accountId"    />
+        <result property="accountName"    column="accountName"    />
+        <result property="channelId"    column="channelId"    />
+        <result property="channelName"    column="channelName"    />
+        <result property="merchantId"    column="merchantId"    />
+        <result property="merchantNo"    column="merchantNo"    />
+        <result property="merchantName"    column="merchantName"    />
+        <result property="orderNo"    column="orderNo"    />
+        <result property="accountOrderNo"    column="accountOrderNo"    />
+        <result property="merchanOrderNo"    column="merchanOrderNo"    />
+        <result property="amount"    column="amount"    />
+        <result property="yjamount"    column="yjamount"    />
+        <result property="method"    column="method"    />
+        <result property="payUrl"    column="payUrl"    />
+        <result property="callbackUrl"    column="callbackUrl"    />
+        <result property="callbackStatus"    column="callbackStatus"    />
+        <result property="callbackTime"    column="callbackTime"    />
+        <result property="returnUrl"    column="returnUrl"    />
+        <result property="bodys"    column="bodys"    />
+        <result property="response"    column="response"    />
+        <result property="orderKey"    column="orderKey"    />
+        <result property="clientIp"    column="clientIp"    />
+        <result property="orderStatus"    column="orderStatus"    />
+        <result property="completionTime"    column="completionTime"    />
+        <result property="returnTime"    column="returnTime"    />
+        <result property="createTime"    column="createTime"    />
+    </resultMap>
+
+    <sql id="selectOrgOrderInfoVo">
+     select id, uid,accountId,accountAppId, accountName, channelId, channelName, merchantId,merchantNo, merchantName, orderNo, accountOrderNo,clientIp,
+               merchanOrderNo, yjamount,amount, method, payUrl, callbackUrl, callbackStatus, callbackTime, returnUrl, bodys, response, orderKey, orderStatus, completionTime, returnTime, createTime from org_order_info
+    </sql>
+
+    <select id="selectOrgOrderInfoList" parameterType="com.ruoyi.system.domain.OrgOrderInfo" resultMap="OrgOrderInfoResult">
+        <include refid="selectOrgOrderInfoVo"/>
+        <where>
+            <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
+            <if test="accountAppId != null  and accountAppId != ''"> and accountAppId = #{accountAppId}</if>
+            <if test="accountId != null  and accountId != ''"> and accountId = #{accountId}</if>
+            <if test="accountName != null  and accountName != ''"> and accountName like concat('%', #{accountName}, '%')</if>
+            <if test="channelId != null  and channelId != ''"> and channelId = #{channelId}</if>
+            <if test="channelName != null  and channelName != ''"> and channelName like concat('%', #{channelName}, '%')</if>
+            <if test="merchantId != null  and merchantId != ''"> and merchantId = #{merchantId}</if>
+            <if test="merchantNo != null  and merchantNo != ''"> and merchantNo = #{merchantNo}</if>
+            <if test="merchantName != null  and merchantName != ''"> and merchantName like concat('%', #{merchantName}, '%')</if>
+            <if test="orderNo != null  and orderNo != ''"> and orderNo = #{orderNo}</if>
+            <if test="accountOrderNo != null  and accountOrderNo != ''"> and accountOrderNo = #{accountOrderNo}</if>
+            <if test="merchanOrderNo != null  and merchanOrderNo != ''"> and merchanOrderNo = #{merchanOrderNo}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="yjamount != null "> and yjamount = #{yjamount}</if>
+            <if test="method != null "> and method = #{method}</if>
+            <if test="payUrl != null  and payUrl != ''"> and payUrl = #{payUrl}</if>
+            <if test="callbackUrl != null  and callbackUrl != ''"> and callbackUrl = #{callbackUrl}</if>
+            <if test="callbackStatus != null "> and callbackStatus = #{callbackStatus}</if>
+            <if test="callbackTime != null "> and callbackTime = #{callbackTime}</if>
+            <if test="returnUrl != null  and returnUrl != ''"> and returnUrl = #{returnUrl}</if>
+            <if test="bodys != null  and bodys != ''"> and bodys = #{bodys}</if>
+            <if test="response != null  and response != ''"> and response = #{response}</if>
+            <if test="orderKey != null  and orderKey != ''"> and orderKey = #{orderKey}</if>
+            <if test="clientIp != null  and clientIp != ''"> and clientIp = #{clientIp}</if>
+            <if test="orderStatus != null "> and orderStatus = #{orderStatus}</if>
+            <if test="completionTime != null "> and completionTime = #{completionTime}</if>
+            <if test="returnTime != null "> and returnTime = #{returnTime}</if>
+            <if test="createTime != null "> and createTime = #{createTime}</if>
+        </where>
+        order by createTime desc
+    </select>
+
+    <select id="selectOrgOrderInfoById" parameterType="Long" resultMap="OrgOrderInfoResult">
+        <include refid="selectOrgOrderInfoVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectPayorderStatusList" resultType="com.ruoyi.system.domain.OrgOrderInfo">
+        <include refid="selectOrgOrderInfoVo"/>
+        where callbackStatus = #{callbackStatus} and now() &lt; date_add(completionTime,interval 10 minute)
+        order by createTime desc
+    </select>
+    <select id="queryOrder" resultType="com.ruoyi.system.domain.OrgOrderInfo">
+        <include refid="selectOrgOrderInfoVo"/>
+        <where>
+            <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
+            <if test="accountId != null  and accountId != ''"> and accountId = #{accountId}</if>
+            <if test="accountAppId != null  and accountAppId != ''"> and accountAppId = #{accountAppId}</if>
+            <if test="accountName != null  and accountName != ''"> and accountName like concat('%', #{accountName}, '%')</if>
+            <if test="channelId != null  and channelId != ''"> and channelId = #{channelId}</if>
+            <if test="channelName != null  and channelName != ''"> and channelName like concat('%', #{channelName}, '%')</if>
+            <if test="merchantNo != null  and merchantNo != ''"> and merchantNo like concat('%', #{merchantNo}, '%')</if>
+            <if test="merchantId != null  and merchantId != ''"> and merchantId = #{merchantId}</if>
+            <if test="merchantName != null  and merchantName != ''"> and merchantName like concat('%', #{merchantName}, '%')</if>
+            <if test="orderNo != null  and orderNo != ''"> and orderNo = #{orderNo}</if>
+            <if test="accountOrderNo != null  and accountOrderNo != ''"> and accountOrderNo = #{accountOrderNo}</if>
+            <if test="merchanOrderNo != null  and merchanOrderNo != ''"> and merchanOrderNo = #{merchanOrderNo}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+        </where>
+        limit 1
+    </select>
+    <select id="selectorderByOrderId" resultType="com.ruoyi.system.domain.OrgOrderInfo">
+        select id, accountId,accountAppId, orderNo, accountOrderNo,merchantNo,uid,
+               merchanOrderNo, yjamount,amount, payUrl, callbackUrl, callbackStatus, returnUrl, bodys, orderStatus, completionTime, returnTime, createTime
+        from org_order_info
+        where orderNo = #{orderNo}
+    </select>
+
+    <select id="selectorderByOrderNoAnd5Hour" resultType="com.ruoyi.system.domain.OrgOrderInfo">
+        <include refid="selectOrgOrderInfoVo"/>
+        where orderNo = #{orderNo} where  createTime &gt;= DATE_SUB(NOW(), INTERVAL 5 HOUR);
+    </select>
+
+
+    <insert id="insertOrgOrderInfo" parameterType="com.ruoyi.system.domain.OrgOrderInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into org_order_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="accountId != null">accountId,</if>
+            <if test="accountAppId != null">accountAppId,</if>
+            <if test="accountName != null">accountName,</if>
+            <if test="channelId != null">channelId,</if>
+            <if test="channelName != null">channelName,</if>
+            <if test="merchantId != null">merchantId,</if>
+            <if test="merchantNo != null">merchantNo,</if>
+            <if test="merchantName != null">merchantName,</if>
+            <if test="orderNo != null">orderNo,</if>
+            <if test="accountOrderNo != null">accountOrderNo,</if>
+            <if test="merchanOrderNo != null">merchanOrderNo,</if>
+            <if test="amount != null">amount,</if>
+            <if test="yjamount != null">yjamount,</if>
+            <if test="method != null">method,</if>
+            <if test="payUrl != null">payUrl,</if>
+            <if test="callbackUrl != null">callbackUrl,</if>
+            <if test="callbackStatus != null">callbackStatus,</if>
+            <if test="callbackTime != null">callbackTime,</if>
+            <if test="returnUrl != null">returnUrl,</if>
+            <if test="bodys != null">bodys,</if>
+            <if test="response != null">response,</if>
+            <if test="orderKey != null">orderKey,</if>
+            <if test="clientIp != null">clientIp,</if>
+            <if test="orderStatus != null">orderStatus,</if>
+            <if test="completionTime != null">completionTime,</if>
+            <if test="returnTime != null">returnTime,</if>
+            <if test="createTime != null">createTime,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="uid != null">#{uid},</if>
+            <if test="accountId != null">#{accountId},</if>
+            <if test="accountAppId != null">#{accountAppId},</if>
+            <if test="accountName != null">#{accountName},</if>
+            <if test="channelId != null">#{channelId},</if>
+            <if test="channelName != null">#{channelName},</if>
+            <if test="merchantId != null">#{merchantId},</if>
+            <if test="merchantNo != null">#{merchantNo},</if>
+            <if test="merchantName != null">#{merchantName},</if>
+            <if test="orderNo != null">#{orderNo},</if>
+            <if test="accountOrderNo != null">#{accountOrderNo},</if>
+            <if test="merchanOrderNo != null">#{merchanOrderNo},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="yjamount != null">#{yjamount},</if>
+            <if test="method != null">#{method},</if>
+            <if test="payUrl != null">#{payUrl},</if>
+            <if test="callbackUrl != null">#{callbackUrl},</if>
+            <if test="callbackStatus != null">#{callbackStatus},</if>
+            <if test="callbackTime != null">#{callbackTime},</if>
+            <if test="returnUrl != null">#{returnUrl},</if>
+            <if test="bodys != null">#{bodys},</if>
+            <if test="response != null">#{response},</if>
+            <if test="orderKey != null">#{orderKey},</if>
+            <if test="clientIp != null">#{clientIp},</if>
+            <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="completionTime != null">#{completionTime},</if>
+            <if test="returnTime != null">#{returnTime},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateOrgOrderInfo" parameterType="com.ruoyi.system.domain.OrgOrderInfo">
+        update org_order_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="uid != null">uid = #{uid},</if>
+            <if test="accountId != null">accountId = #{accountId},</if>
+            <if test="accountAppId != null">accountAppId = #{accountAppId},</if>
+            <if test="accountName != null">accountName = #{accountName},</if>
+            <if test="channelId != null">channelId = #{channelId},</if>
+            <if test="channelName != null">channelName = #{channelName},</if>
+            <if test="merchantId != null">merchantId = #{merchantId},</if>
+            <if test="merchantNo != null">merchantNo = #{merchantNo},</if>
+            <if test="merchantName != null">merchantName = #{merchantName},</if>
+            <if test="orderNo != null">orderNo = #{orderNo},</if>
+            <if test="accountOrderNo != null">accountOrderNo = #{accountOrderNo},</if>
+            <if test="merchanOrderNo != null">merchanOrderNo = #{merchanOrderNo},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="yjamount != null">yjamount = #{yjamount},</if>
+            <if test="method != null">method = #{method},</if>
+            <if test="payUrl != null">payUrl = #{payUrl},</if>
+            <if test="callbackUrl != null">callbackUrl = #{callbackUrl},</if>
+            <if test="callbackStatus != null">callbackStatus = #{callbackStatus},</if>
+            <if test="callbackTime != null">callbackTime = #{callbackTime},</if>
+            <if test="returnUrl != null">returnUrl = #{returnUrl},</if>
+            <if test="bodys != null">bodys = #{bodys},</if>
+            <if test="response != null">response = #{response},</if>
+            <if test="orderKey != null">orderKey = #{orderKey},</if>
+            <if test="clientIp != null">clientIp = #{clientIp},</if>
+            <if test="orderStatus != null">orderStatus = #{orderStatus},</if>
+            <if test="completionTime != null">completionTime = #{completionTime},</if>
+            <if test="returnTime != null">returnTime = #{returnTime},</if>
+            <if test="createTime != null">createTime = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteOrgOrderInfoById" parameterType="Long">
+        delete from org_order_info where id = #{id}
+    </delete>
+
+    <delete id="deleteOrgOrderInfoByIds" parameterType="String">
+        delete from org_order_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="seleteByIp" parameterType="String" resultType="Integer">
+        select count(1) from org_order_info
+        where clientIp = #{ipadd} and date_format(createTime,'%Y-%m-%d') = date_format(CURDATE(),'%Y-%m-%d')
+    </select>
+
+    <select id="seleteByUid" parameterType="String" resultType="Integer">
+        select count(1) from org_order_info
+        where accountAppId = #{accountAppId}
+          and uid = #{uid}
+          and callbackStatus = 1
+          and date_format(createTime,'%Y-%m-%d') = date_format(CURDATE(),'%Y-%m-%d')
+    </select>
+
+    <select id="seleteByOrderNo" parameterType="String"  resultType="com.ruoyi.system.domain.OrgOrderInfo">
+        <include refid="selectOrgOrderInfoVo"/>
+        where orderStatus = 1 and  (orderNo = #{orderNo} or merchanOrderNo = #{orderNo} or accountOrderNo = #{orderNo})
+        limit 1
+    </select>
+
+</mapper>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SysProductMapper">
+
+    <resultMap type="com.ruoyi.system.domain.SysProduct" id="SysProductResult">
+        <result property="id"    column="id"    />
+        <result property="merId"    column="mer_id"    />
+        <result property="image"    column="image"    />
+        <result property="flatPattern"    column="flat_pattern"    />
+        <result property="sliderImage"    column="slider_image"    />
+        <result property="name"    column="name"    />
+        <result property="intro"    column="intro"    />
+        <result property="keyword"    column="keyword"    />
+        <result property="cateId"    column="cate_id"    />
+        <result property="brandId"    column="brand_id"    />
+        <result property="categoryId"    column="category_id"    />
+        <result property="guaranteeIds"    column="guarantee_ids"    />
+        <result property="price"    column="price"    />
+        <result property="vipPrice"    column="vip_price"    />
+        <result property="otPrice"    column="ot_price"    />
+        <result property="unitName"    column="unit_name"    />
+        <result property="sales"    column="sales"    />
+        <result property="stock"    column="stock"    />
+        <result property="cost"    column="cost"    />
+        <result property="ficti"    column="ficti"    />
+        <result property="browse"    column="browse"    />
+        <result property="codePath"    column="code_path"    />
+        <result property="soureLink"    column="soure_link"    />
+        <result property="videoLink"    column="video_link"    />
+        <result property="tempId"    column="temp_id"    />
+        <result property="sort"    column="sort"    />
+        <result property="rank"    column="rank"    />
+        <result property="specType"    column="spec_type"    />
+        <result property="isRecycle"    column="is_recycle"    />
+        <result property="isSub"    column="is_sub"    />
+        <result property="isShow"    column="is_show"    />
+        <result property="auditStatus"    column="audit_status"    />
+        <result property="isAudit"    column="is_audit"    />
+        <result property="reason"    column="reason"    />
+        <result property="isDel"    column="is_del"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectSysProductVo">
+        select id, mer_id, image, flat_pattern, slider_image, name, intro, keyword, cate_id, brand_id, category_id, guarantee_ids, price, vip_price, ot_price, unit_name, sales, stock, cost, ficti, browse, code_path, soure_link, video_link, temp_id, sort, rank, spec_type, is_recycle, is_sub, is_show, audit_status, is_audit, reason, is_del, create_time, update_time from sys_product
+    </sql>
+
+    <select id="selectSysProductList" parameterType="com.ruoyi.system.domain.SysProduct" resultMap="SysProductResult">
+        <include refid="selectSysProductVo"/>
+        <where>
+            <if test="merId != null "> and mer_id = #{merId}</if>
+            <if test="image != null  and image != ''"> and image = #{image}</if>
+            <if test="flatPattern != null  and flatPattern != ''"> and flat_pattern = #{flatPattern}</if>
+            <if test="sliderImage != null  and sliderImage != ''"> and slider_image = #{sliderImage}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="intro != null  and intro != ''"> and intro = #{intro}</if>
+            <if test="keyword != null  and keyword != ''"> and keyword = #{keyword}</if>
+            <if test="cateId != null  and cateId != ''"> and cate_id = #{cateId}</if>
+            <if test="brandId != null "> and brand_id = #{brandId}</if>
+            <if test="categoryId != null "> and category_id = #{categoryId}</if>
+            <if test="guaranteeIds != null  and guaranteeIds != ''"> and guarantee_ids = #{guaranteeIds}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="vipPrice != null "> and vip_price = #{vipPrice}</if>
+            <if test="otPrice != null "> and ot_price = #{otPrice}</if>
+            <if test="unitName != null  and unitName != ''"> and unit_name like concat('%', #{unitName}, '%')</if>
+            <if test="sales != null "> and sales = #{sales}</if>
+            <if test="stock != null "> and stock = #{stock}</if>
+            <if test="cost != null "> and cost = #{cost}</if>
+            <if test="ficti != null "> and ficti = #{ficti}</if>
+            <if test="browse != null "> and browse = #{browse}</if>
+            <if test="codePath != null  and codePath != ''"> and code_path = #{codePath}</if>
+            <if test="soureLink != null  and soureLink != ''"> and soure_link = #{soureLink}</if>
+            <if test="videoLink != null  and videoLink != ''"> and video_link = #{videoLink}</if>
+            <if test="tempId != null "> and temp_id = #{tempId}</if>
+            <if test="sort != null "> and sort = #{sort}</if>
+            <if test="rank != null "> and rank = #{rank}</if>
+            <if test="specType != null "> and spec_type = #{specType}</if>
+            <if test="isRecycle != null "> and is_recycle = #{isRecycle}</if>
+            <if test="isSub != null "> and is_sub = #{isSub}</if>
+            <if test="isShow != null "> and is_show = #{isShow}</if>
+            <if test="auditStatus != null "> and audit_status = #{auditStatus}</if>
+            <if test="isAudit != null "> and is_audit = #{isAudit}</if>
+            <if test="reason != null  and reason != ''"> and reason = #{reason}</if>
+            <if test="isDel != null "> and is_del = #{isDel}</if>
+        </where>
+    </select>
+
+    <select id="selectSysProductById" parameterType="Long" resultMap="SysProductResult">
+        <include refid="selectSysProductVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectSysProductRand" resultType="com.ruoyi.system.domain.SysProduct">
+        <include refid="selectSysProductVo"/>
+        where is_show = 1 and audit_status = 2
+        ORDER BY RAND() LIMIT 1;
+    </select>
+
+    <insert id="insertSysProduct" parameterType="com.ruoyi.system.domain.SysProduct" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_product
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="merId != null">mer_id,</if>
+            <if test="image != null and image != ''">image,</if>
+            <if test="flatPattern != null and flatPattern != ''">flat_pattern,</if>
+            <if test="sliderImage != null and sliderImage != ''">slider_image,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="intro != null and intro != ''">intro,</if>
+            <if test="keyword != null and keyword != ''">keyword,</if>
+            <if test="cateId != null and cateId != ''">cate_id,</if>
+            <if test="brandId != null">brand_id,</if>
+            <if test="categoryId != null">category_id,</if>
+            <if test="guaranteeIds != null and guaranteeIds != ''">guarantee_ids,</if>
+            <if test="price != null">price,</if>
+            <if test="vipPrice != null">vip_price,</if>
+            <if test="otPrice != null">ot_price,</if>
+            <if test="unitName != null and unitName != ''">unit_name,</if>
+            <if test="sales != null">sales,</if>
+            <if test="stock != null">stock,</if>
+            <if test="cost != null">cost,</if>
+            <if test="ficti != null">ficti,</if>
+            <if test="browse != null">browse,</if>
+            <if test="codePath != null">code_path,</if>
+            <if test="soureLink != null">soure_link,</if>
+            <if test="videoLink != null">video_link,</if>
+            <if test="tempId != null">temp_id,</if>
+            <if test="sort != null">sort,</if>
+            <if test="rank != null">rank,</if>
+            <if test="specType != null">spec_type,</if>
+            <if test="isRecycle != null">is_recycle,</if>
+            <if test="isSub != null">is_sub,</if>
+            <if test="isShow != null">is_show,</if>
+            <if test="auditStatus != null">audit_status,</if>
+            <if test="isAudit != null">is_audit,</if>
+            <if test="reason != null and reason != ''">reason,</if>
+            <if test="isDel != null">is_del,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="merId != null">#{merId},</if>
+            <if test="image != null and image != ''">#{image},</if>
+            <if test="flatPattern != null and flatPattern != ''">#{flatPattern},</if>
+            <if test="sliderImage != null and sliderImage != ''">#{sliderImage},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="intro != null and intro != ''">#{intro},</if>
+            <if test="keyword != null and keyword != ''">#{keyword},</if>
+            <if test="cateId != null and cateId != ''">#{cateId},</if>
+            <if test="brandId != null">#{brandId},</if>
+            <if test="categoryId != null">#{categoryId},</if>
+            <if test="guaranteeIds != null and guaranteeIds != ''">#{guaranteeIds},</if>
+            <if test="price != null">#{price},</if>
+            <if test="vipPrice != null">#{vipPrice},</if>
+            <if test="otPrice != null">#{otPrice},</if>
+            <if test="unitName != null and unitName != ''">#{unitName},</if>
+            <if test="sales != null">#{sales},</if>
+            <if test="stock != null">#{stock},</if>
+            <if test="cost != null">#{cost},</if>
+            <if test="ficti != null">#{ficti},</if>
+            <if test="browse != null">#{browse},</if>
+            <if test="codePath != null">#{codePath},</if>
+            <if test="soureLink != null">#{soureLink},</if>
+            <if test="videoLink != null">#{videoLink},</if>
+            <if test="tempId != null">#{tempId},</if>
+            <if test="sort != null">#{sort},</if>
+            <if test="rank != null">#{rank},</if>
+            <if test="specType != null">#{specType},</if>
+            <if test="isRecycle != null">#{isRecycle},</if>
+            <if test="isSub != null">#{isSub},</if>
+            <if test="isShow != null">#{isShow},</if>
+            <if test="auditStatus != null">#{auditStatus},</if>
+            <if test="isAudit != null">#{isAudit},</if>
+            <if test="reason != null and reason != ''">#{reason},</if>
+            <if test="isDel != null">#{isDel},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysProduct" parameterType="com.ruoyi.system.domain.SysProduct">
+        update sys_product
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="merId != null">mer_id = #{merId},</if>
+            <if test="image != null and image != ''">image = #{image},</if>
+            <if test="flatPattern != null and flatPattern != ''">flat_pattern = #{flatPattern},</if>
+            <if test="sliderImage != null and sliderImage != ''">slider_image = #{sliderImage},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="intro != null and intro != ''">intro = #{intro},</if>
+            <if test="keyword != null and keyword != ''">keyword = #{keyword},</if>
+            <if test="cateId != null and cateId != ''">cate_id = #{cateId},</if>
+            <if test="brandId != null">brand_id = #{brandId},</if>
+            <if test="categoryId != null">category_id = #{categoryId},</if>
+            <if test="guaranteeIds != null and guaranteeIds != ''">guarantee_ids = #{guaranteeIds},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="vipPrice != null">vip_price = #{vipPrice},</if>
+            <if test="otPrice != null">ot_price = #{otPrice},</if>
+            <if test="unitName != null and unitName != ''">unit_name = #{unitName},</if>
+            <if test="sales != null">sales = #{sales},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="cost != null">cost = #{cost},</if>
+            <if test="ficti != null">ficti = #{ficti},</if>
+            <if test="browse != null">browse = #{browse},</if>
+            <if test="codePath != null">code_path = #{codePath},</if>
+            <if test="soureLink != null">soure_link = #{soureLink},</if>
+            <if test="videoLink != null">video_link = #{videoLink},</if>
+            <if test="tempId != null">temp_id = #{tempId},</if>
+            <if test="sort != null">sort = #{sort},</if>
+            <if test="rank != null">rank = #{rank},</if>
+            <if test="specType != null">spec_type = #{specType},</if>
+            <if test="isRecycle != null">is_recycle = #{isRecycle},</if>
+            <if test="isSub != null">is_sub = #{isSub},</if>
+            <if test="isShow != null">is_show = #{isShow},</if>
+            <if test="auditStatus != null">audit_status = #{auditStatus},</if>
+            <if test="isAudit != null">is_audit = #{isAudit},</if>
+            <if test="reason != null and reason != ''">reason = #{reason},</if>
+            <if test="isDel != null">is_del = #{isDel},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysProductById" parameterType="Long">
+        delete from sys_product where id = #{id}
+    </delete>
+
+    <delete id="deleteSysProductByIds" parameterType="String">
+        delete from sys_product where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

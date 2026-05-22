@@ -1,0 +1,2 @@
+ALTER TABLE `org_order_info` ADD `clientIp` VARCHAR(50) NULL COMMENT '客户端IP' AFTER `createTime`, ADD `uid` VARCHAR(100) NULL COMMENT '用户ID' AFTER `clientIp`;
+ALTER TABLE `org_account` ADD `cashier` INT(1) NULL DEFAULT '0' COMMENT '是否需要收银台 1是0否' AFTER `createdTime`;

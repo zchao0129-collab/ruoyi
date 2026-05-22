@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.AlipayUserInfoMapper">
+
+    <resultMap type="AlipayUserInfo" id="AlipayUserInfoResult">
+        <result property="id"    column="id"    />
+        <result property="appid"    column="appid"    />
+        <result property="uid"    column="uid"    />
+        <result property="ipadd"    column="ipadd"    />
+        <result property="iszt"    column="iszt"    />
+        <result property="payCount"    column="payCount"    />
+        <result property="initCount"    column="initCount"    />
+        <result property="gmtCreate"    column="gmt_create"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <sql id="selectAlipayUserInfoVo">
+        select id,appid, uid, ipadd,iszt,payCount,initCount,gmt_create,update_time from alipay_user_info
+    </sql>
+
+    <select id="selectAlipayUserInfoList" parameterType="AlipayUserInfo" resultMap="AlipayUserInfoResult">
+        <include refid="selectAlipayUserInfoVo"/>
+        <where>
+            <if test="appid != null  and appid != ''"> and appid = #{appid}</if>
+            <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
+            <if test="ipadd != null  and ipadd != ''"> and ipadd = #{ipadd}</if>
+            <if test="iszt != null  and iszt != ''"> and iszt = #{iszt}</if>
+            <if test="payCount != null  and payCount != ''"> and payCount = #{payCount}</if>
+            <if test="initCount != null  and initCount != ''"> and initCount = #{initCount}</if>
+            <if test="gmtCreate != null "> and gmt_create = #{gmtCreate}</if>
+            <if test="updateTime != null "> and update_time = #{updateTime}</if>
+        </where>
+        order by update_time desc,gmt_create desc,payCount desc,initCount desc
+    </select>
+
+    <select id="selectAlipayUserInfoById" parameterType="Long" resultMap="AlipayUserInfoResult">
+        <include refid="selectAlipayUserInfoVo"/>
+        where id = #{id}
+    </select>
+
+
+    <select id="selectCountMenuByParentId" resultType="Integer">
+        select count(1) from sys_menu where parent_id=#{menuId}
+    </select>
+
+
+    <select id="selectAlipayUserInfoByUid" parameterType="String" resultMap="AlipayUserInfoResult">
+        <include refid="selectAlipayUserInfoVo"/>
+          where uid = #{uid}
+         -- and date_format(createTime,'%Y-%m-%d') = date_format(CURDATE(),'%Y-%m-%d')
+    </select>
+
+
+    <insert id="insertAlipayUserInfo" parameterType="AlipayUserInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into alipay_user_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="appid != null and appid != ''">appid,</if>
+            <if test="uid != null and uid != ''">uid,</if>
+            <if test="ipadd != null">ipadd,</if>
+            <if test="payCount != null">payCount,</if>
+            <if test="initCount != null">initCount,</if>
+            <if test="gmtCreate != null">gmt_create,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="appid != null and appid != ''">#{appid},</if>
+            <if test="uid != null and uid != ''">#{uid},</if>
+            <if test="ipadd != null">#{ipadd},</if>
+            <if test="payCount != null">#{payCount},</if>
+            <if test="initCount != null">#{initCount},</if>
+            <if test="gmtCreate != null">#{gmtCreate},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAlipayUserInfo" parameterType="AlipayUserInfo">
+        update alipay_user_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="appid != null and appid != ''">appid = #{appid},</if>
+            <if test="uid != null and uid != ''">uid = #{uid},</if>
+            <if test="ipadd != null">ipadd = #{ipadd},</if>
+            <if test="iszt != null">iszt = #{iszt},</if>
+            <if test="payCount != null">payCount = #{payCount},</if>
+            <if test="initCount != null">initCount = #{initCount},</if>
+            <if test="gmtCreate != null">gmt_create = #{gmtCreate},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAlipayUserInfoById" parameterType="Long">
+        delete from alipay_user_info where id = #{id}
+    </delete>
+
+    <delete id="deleteAlipayUserInfoByIds" parameterType="String">
+        delete from alipay_user_info where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="countByAppid" parameterType="String" resultType="Integer">
+        select count(1) from alipay_user_info
+        where appid = #{appid}
+    </select>
+
+    <select id="countByAppidAndUid" parameterType="AlipayUserInfo" resultType="Integer">
+        select count(1) from alipay_user_info
+        where appid = #{appid}  and  uid = #{uid}
+    </select>
+
+    <select id="selectAlipayUserInfoByAppidAndUid" parameterType="AlipayUserInfo"  resultMap="AlipayUserInfoResult">
+        <include refid="selectAlipayUserInfoVo"/>
+        where uid = #{uid} and appid = #{appid}
+        -- and date_format(createTime,'%Y-%m-%d') = date_format(CURDATE(),'%Y-%m-%d')
+    </select>
+
+</mapper>

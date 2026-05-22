@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('tradecomplain列表')" />
+</head>
+<body class="gray-bg">
+     <div class="container-div">
+        <div class="row">
+            <div class="col-sm-12 search-collapse">
+                <form id="formId">
+                    <div class="select-list">
+                        <ul>
+                            <li>
+                                <label>应用id：</label>
+                                <input type="text" name="targetId"/>
+                            </li>
+                            <li>
+                                <label>支付宝侧投诉单号：</label>
+                                <input type="text" name="complainEventId"/>
+                            </li>
+                            <li>
+                                <label>支付宝交易号：</label>
+                                <input type="text" name="tradeNo"/>
+                            </li>
+                            <li>
+                                <label>商家订单号：</label>
+                                <input type="text" name="merchantOrderNo"/>
+                            </li>
+                            <li>
+                                <label>投诉单创建时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择投诉单创建时间" name="gmtCreate"/>
+                            </li>
+                            <li>
+                                <label>投诉单修改时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择投诉单修改时间" name="gmtModified"/>
+                            </li>
+                            <li>
+                                <label>投诉单结束时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择投诉单结束时间" name="gmtFinished"/>
+                            </li>
+                            <li>
+                                <label>投诉诉求：</label>
+                                <input type="text" name="leafCategoryName"/>
+                            </li>
+                            <li>
+                                <label>投诉原因：</label>
+                                <input type="text" name="complainReason"/>
+                            </li>
+                            <li>
+                                <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
+                                <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+                            </li>
+                        </ul>
+                    </div>
+                </form>
+            </div>
+
+<!--            <div class="btn-group-sm" id="toolbar" role="group">-->
+<!--                <a class="btn btn-success" onclick="$.operate.add()" shiro:hasPermission="system:complain:add">-->
+<!--                    <i class="fa fa-plus"></i> 添加-->
+<!--                </a>-->
+<!--                <a class="btn btn-primary single disabled" onclick="$.operate.edit()" shiro:hasPermission="system:complain:edit">-->
+<!--                    <i class="fa fa-edit"></i> 修改-->
+<!--                </a>-->
+<!--                <a class="btn btn-danger multiple disabled" onclick="$.operate.removeAll()" shiro:hasPermission="system:complain:remove">-->
+<!--                    <i class="fa fa-remove"></i> 删除-->
+<!--                </a>-->
+<!--                <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="system:complain:export">-->
+<!--                    <i class="fa fa-download"></i> 导出-->
+<!--                </a>-->
+<!--            </div>-->
+            <div class="col-sm-12 select-table table-striped">
+                <table id="bootstrap-table"></table>
+            </div>
+        </div>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var editFlag = [[${@permission.hasPermi('system:complain:edit')}]];
+        var removeFlag = [[${@permission.hasPermi('system:complain:remove')}]];
+        var prefix = ctx + "system/complain";
+
+        $(function() {
+            var options = {
+                url: prefix + "/list",
+                createUrl: prefix + "/add",
+                updateUrl: prefix + "/edit/{id}",
+                removeUrl: prefix + "/remove",
+                exportUrl: prefix + "/export",
+                modalName: "tradecomplain",
+                columns: [{
+                    checkbox: true
+                },
+                {
+                    field: 'targetId',
+                    title: '应用id'
+                },
+                {
+                    field: 'targetType',
+                    title: '应用类型'
+                },
+                {
+                    field: 'complainEventId',
+                    title: '支付宝侧投诉单号'
+                },
+                {
+                    field: 'status',
+                    title: '状态'
+                },
+                {
+                    field: 'tradeNo',
+                    title: '支付宝交易号'
+                },
+                {
+                    field: 'merchantOrderNo',
+                    title: '商家订单号'
+                },
+                {
+                    field: 'gmtCreate',
+                    title: '投诉单创建时间'
+                },
+                {
+                    field: 'gmtModified',
+                    title: '投诉单修改时间'
+                },
+                {
+                    field: 'gmtFinished',
+                    title: '投诉单结束时间'
+                },
+                {
+                    field: 'leafCategoryName',
+                    title: '投诉诉求'
+                },
+                {
+                    field: 'complainReason',
+                    title: '投诉原因'
+                },
+                {
+                    field: 'content',
+                    title: '投诉内容'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function(value, row, index) {
+                        var actions = [];
+                        actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="javascript:void(0)" onclick="$.operate.edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+                        actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="javascript:void(0)" onclick="$.operate.remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+                        return actions.join('');
+                    }
+                }]
+            };
+            $.table.init(options);
+        });
+    </script>
+</body>
+</html>
