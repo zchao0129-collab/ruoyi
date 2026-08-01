@@ -158,6 +158,7 @@ alipay:
   returnUrl: http://pay.hbhdpy.cn/outside/order/alipay/return
   subject: 《战神霸域》游戏充值
   apikey: 95ad4df24fec408b590c10c4dc7fb827
+  alipayPublicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo7Ptds9ZaNUhOgkjc8vPsZrxo2CCU+bsciHqEkc3V/H4dlfm+2g5bGiElpdl9lFibhui/HEmng+Rd3rRII0CC3z3/vAHZ7K4hlTPyAPkS2bD/jHppPLuYvGVTfD/4fht52p86ZGASgvuhE5+GejAcVOe/Ywkzppa2AA4Q8vppSSSNjWK/+VchibBoKFLiafUL1vVliMmnU+9/8WQY17aBLwhTSOQY5MGvaCg01EAg6HOJCU5ZpEvlAFyPzz6xyJt+ARge4jF9w8761AAgh0M91Rzw8n5bEIFKtpQ9lSHJWTJMEq3nct4Dm3qH4RXQotP2Xn1qqfKRSaD2823OMPd1wIDAQAB
 
 # 黑名单
 blacklist:

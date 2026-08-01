@@ -10,6 +10,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="uid"    column="uid"    />
         <result property="ipadd"    column="ipadd"    />
         <result property="iszt"    column="iszt"    />
+        <result property="riskType"    column="riskType"    />
+        <result property="riskLevel"    column="riskLevel"    />
         <result property="payCount"    column="payCount"    />
         <result property="initCount"    column="initCount"    />
         <result property="gmtCreate"    column="gmt_create"    />
@@ -17,7 +19,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectAlipayUserInfoVo">
-        select id,appid, uid, ipadd,iszt,payCount,initCount,gmt_create,update_time from alipay_user_info
+        select id,appid, uid, ipadd,iszt,riskType,riskLevel,payCount,initCount,gmt_create,update_time from alipay_user_info
     </sql>
 
     <select id="selectAlipayUserInfoList" parameterType="AlipayUserInfo" resultMap="AlipayUserInfoResult">
@@ -27,6 +29,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="uid != null  and uid != ''"> and uid = #{uid}</if>
             <if test="ipadd != null  and ipadd != ''"> and ipadd = #{ipadd}</if>
             <if test="iszt != null  and iszt != ''"> and iszt = #{iszt}</if>
+            <if test="riskType != null  and riskType != ''"> and riskType = #{riskType}</if>
+            <if test="riskLevel != null  and riskLevel != ''"> and riskLevel = #{riskLevel}</if>
             <if test="payCount != null  and payCount != ''"> and payCount = #{payCount}</if>
             <if test="initCount != null  and initCount != ''"> and initCount = #{initCount}</if>
             <if test="gmtCreate != null "> and gmt_create = #{gmtCreate}</if>
@@ -59,6 +63,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="appid != null and appid != ''">appid,</if>
             <if test="uid != null and uid != ''">uid,</if>
             <if test="ipadd != null">ipadd,</if>
+            <if test="iszt != null">iszt,</if>
+            <if test="riskType != null">riskType,</if>
+            <if test="riskLevel != null">riskLevel,</if>
             <if test="payCount != null">payCount,</if>
             <if test="initCount != null">initCount,</if>
             <if test="gmtCreate != null">gmt_create,</if>
@@ -68,6 +75,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="appid != null and appid != ''">#{appid},</if>
             <if test="uid != null and uid != ''">#{uid},</if>
             <if test="ipadd != null">#{ipadd},</if>
+            <if test="iszt != null">#{iszt},</if>
+            <if test="riskType != null">#{riskType},</if>
+            <if test="riskLevel != null">#{riskLevel},</if>
             <if test="payCount != null">#{payCount},</if>
             <if test="initCount != null">#{initCount},</if>
             <if test="gmtCreate != null">#{gmtCreate},</if>
@@ -82,6 +92,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="uid != null and uid != ''">uid = #{uid},</if>
             <if test="ipadd != null">ipadd = #{ipadd},</if>
             <if test="iszt != null">iszt = #{iszt},</if>
+            <if test="riskType != null">riskType = #{riskType},</if>
+            <if test="riskLevel != null">riskLevel = #{riskLevel},</if>
             <if test="payCount != null">payCount = #{payCount},</if>
             <if test="initCount != null">initCount = #{initCount},</if>
             <if test="gmtCreate != null">gmt_create = #{gmtCreate},</if>

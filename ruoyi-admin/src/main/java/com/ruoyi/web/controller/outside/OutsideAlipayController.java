@@ -122,7 +122,7 @@ public class OutsideAlipayController extends BaseController {
 
     @PostMapping("/createOrderInfo")
     @ResponseBody
-    public AjaxResult createAlipayOrder(@RequestBody OutsideOrderVO orderVo) throws Exception{
+    public AjaxResult createAlipayOrder(@RequestBody OutsideOrderVO orderVo,HttpServletRequest request) throws Exception{
         logger.info("接收参数:"+orderVo.toString());
         if(StringUtils.isEmpty(orderVo.getAppid())){
             return new AjaxResult(AjaxResult.Type.ERROR,"appid为空","appid为空");
@@ -158,10 +158,12 @@ public class OutsideAlipayController extends BaseController {
         orderInfo.setAccountName(account.getAccountName());
         orderInfo.setAccountId(account.getId());
         orderInfo.setUid(orderVo.getUid());
+        orderInfo.setClientIp("");
         orderInfo.setAccountOrderNo(orderVo.getMerchantOrderNo());
         orderInfo.setCallbackUrl(orderVo.getCallbackUrl());
         orderInfo.setReturnUrl(orderVo.getReturnUrl());
         orderInfo.setAmount(orderVo.getAmount());
+        getIpAddr(request);
         if("0".equals(yjType)){ //
             orderInfo.setYjamount(orderVo.getAmount());
         }else if("1".equals(yjType)){   //递减
@@ -358,7 +360,7 @@ public class OutsideAlipayController extends BaseController {
     @ResponseBody
     public String aliCallback(HttpServletRequest request) throws UnsupportedEncodingException, AlipayApiException {
         //支付宝支付回调
-        logger.info("支付宝支付回调 request ===> " + request.getParameterMap());
+        logger.info("支付宝异步支付回调 request ===> " + request.getParameterMap());
         return alipayServer.aliPayCallback(request);
     }
 
@@ -379,6 +381,7 @@ public class OutsideAlipayController extends BaseController {
             //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化
             valueStr = new String(valueStr.getBytes("ISO-8859-1"), "utf-8");
             params.put(name, valueStr);
+
         }
 
         //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以下仅供参考)//
@@ -606,16 +609,17 @@ public class OutsideAlipayController extends BaseController {
             //调用4方接口，参数 支付宝appid加Uid 返回 appid对应支付宝支付用户总数，4方保存支付宝用户信息以及对应该appid。如果有支付用户信息对应其它appid则 返回1000000000(10亿)
             payUserCount = get4AppidAndUidCount(orderInfo.getMerchantNo(),uid);
         }else if(payMy4FanSys == 1 ){
-            alipayUserInfo.setUid(uid);
-            alipayUserInfo.setAppid(orderInfo.getMerchantNo());
-            payUserCount =alipayUserInfoService.countByAppidAndUid(alipayUserInfo);
+            AlipayUserInfo userInfo = new AlipayUserInfo();
+            userInfo.setUid(uid);
+            userInfo.setAppid(orderInfo.getMerchantNo());
+            payUserCount =alipayUserInfoService.countByAppidAndUid(userInfo);
         }else{
             payUserCount = 0;
         }
 
         logger.info(" payUserCount:"+payUserCount);
         if(payUserCount > payInitUserCount){
-            return "调用失败";
+            return "支付用户数超出限制";
         }
         //如果支付用户数超出限制，哲调用失败  --结束
 

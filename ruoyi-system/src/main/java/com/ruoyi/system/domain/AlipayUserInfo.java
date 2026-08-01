@@ -32,6 +32,11 @@ public class AlipayUserInfo extends BaseEntity
     private Long initCount;
 
     private Long payCount;
+
+    private String riskType;
+
+    private String riskLevel;
+
     /** ip地址 */
     @Excel(name = "ip地址")
     private String ipadd;
@@ -110,6 +115,22 @@ public class AlipayUserInfo extends BaseEntity
         this.appid = appid;
     }
 
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public void setRiskLevel(String riskLevel) {
+        this.riskLevel = riskLevel;
+    }
+
+    public String getRiskType() {
+        return riskType;
+    }
+
+    public void setRiskType(String riskType) {
+        this.riskType = riskType;
+    }
+
     @Override
     public String toString() {
         return "AlipayUserInfo{" +
@@ -119,6 +140,8 @@ public class AlipayUserInfo extends BaseEntity
                 ", iszt=" + iszt +
                 ", initCount=" + initCount +
                 ", payCount=" + payCount +
+                ", riskType='" + riskType + '\'' +
+                ", riskLevel='" + riskLevel + '\'' +
                 ", ipadd='" + ipadd + '\'' +
                 ", gmtCreate=" + gmtCreate +
                 '}';

@@ -14,6 +14,8 @@ public interface AlipayServer {
 
     AjaxResult aliPayment(OrgOrderInfo orderInfo);
 
+    String aliPaymentUrl(OrgOrderInfo orderInfo,HttpServletRequest request);
+
     AjaxResult aliJSapiPayment(OrgOrderInfo orderInfo) throws AlipayApiException;
 
     AjaxResult aliFace2FacePayment(OrgOrderInfo orderInfo);

@@ -15,11 +15,9 @@ import com.alipay.api.response.*;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.http.UserAgentUtil;
 import com.ruoyi.common.utils.security.Md5Utils;
-import com.ruoyi.system.domain.AlipayUserInfo;
-import com.ruoyi.system.domain.OrgOrderInfo;
-import com.ruoyi.system.domain.OrgTradeComplain;
-import com.ruoyi.system.domain.SysAlipayConfig;
+import com.ruoyi.system.domain.*;
 import com.ruoyi.system.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +33,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.ArrayList;
 
@@ -147,18 +146,138 @@ public class AlipayServerImpl implements AlipayServer {
             String payurl ="";
             if(ObjectUtil.isNotEmpty(orderInfo.getCashier())&&orderInfo.getCashier()==1){
                 payurl = alipay+"rechargeOrder/"+ orderInfo.getOrderNo()+"/"+orderMerMd5;  //收银台
-            }else{
+            }else {
                 payurl = alipay+"payOrderInfo/"+ orderInfo.getOrderNo()+"/"+orderMerMd5;
             }
             orderInfo.setPayUrl(payurl);
             orgOrderInfoService.insertOrgOrderInfo(orderInfo);
             Map<String,String > resMap = new HashMap();
-            resMap.put("orderPayLink",payurl);
+            if(ObjectUtil.isNotEmpty(orderInfo.getCashier())&&orderInfo.getCashier()==2){
+                resMap.put("orderPayLink",form);
+            }else{
+                resMap.put("orderPayLink",payurl);
+            }
             resMap.put("orderNo",orderInfo.getOrderNo());
             resMap.put("merchantOrderNo",orderInfo.getAccountOrderNo());
             return new AjaxResult(AjaxResult.Type.SUCCESS,null, JSONObject.toJSON(resMap));
         }else{
             return myPayServer.tradeOrder(orderInfo,alipayConfig);
+        }
+    }
+
+
+    @Override
+    public String aliPaymentUrl(OrgOrderInfo orderInfo,HttpServletRequest request) {
+
+        // 1. 解析UA设备信息
+        UserAgentUtil.DeviceInfo device = UserAgentUtil.parse(request);
+        String uaFull = request.getHeader("User-Agent");
+
+        // 2. 组装business_params 里的device_info、mobile_operating_platform
+        String deviceInfoStr = uaFull;
+        String mobileOperatingPlatform = device.getOs(); // ios / android / pc_web
+        // 3. 拼接风控json
+        String dateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String clientIp = getRealIp(request); // 获取真实公网IP
+
+        // 商户订单号，商户网站订单系统中唯一订单号，必填
+        String out_trade_no = new String(orderInfo.getOrderNo());
+        // 订单名称，必填
+        String subject = new String("用户充值");
+        // 付款金额，必填
+        String total_amount=new String(orderInfo.getYjamount()+"");
+        // 商品描述，可空
+        String body = new String("用户充值");
+        // 超时时间 可空
+        String timeout_express="2m";
+        // 销售产品码 必填
+        String product_code="QUICK_WAP_WAY";//QUICK_MSECURITY_PAY
+        /**********************/
+        // SDK 公共请求类，包含公共请求参数，以及封装了签名与验签，开发者无需关注签名与验签
+        //调用RSA签名方式
+        int weight = (int)(Math.random()*10000)%100;
+        SysAlipayConfig alipayConfig  = sysAlipayConfigService.selectSysAlipayConfigStatusWeight(weight);;
+        if(alipayConfig == null || BeanUtil.isEmpty(alipayConfig)){
+            alipayConfig = sysAlipayConfigService.selectSysAlipayConfigStatusTopOne();
+        }
+        String paygetway = "https://openapi.alipay.com/gateway.do";
+        if(paygetway.equals(alipayConfig.getURL())){
+            String aliPayAppid = alipayConfig.getAPPID();
+            AlipayClient alipayClient = null;
+            if(alipayConfig.getKeyOrCert() == 1){
+                logger.info("证书客户端！");
+                alipayClient =  certClient(alipayConfig);
+            }else{
+                logger.info("秘钥客户端！");
+                alipayClient =  alipayClient(alipayConfig);
+            }
+
+            AlipayTradeWapPayRequest alipay_request=new AlipayTradeWapPayRequest();
+            // 封装请求支付信息
+            AlipayTradeWapPayModel model=new AlipayTradeWapPayModel();
+
+            //AlipayTradePayRequest alipay_request = new AlipayTradePayRequest();
+            //AlipayTradePayModel model = new AlipayTradePayModel();
+
+            model.setOutTradeNo(out_trade_no);
+            model.setSubject(subject);
+            model.setTotalAmount(total_amount);
+            model.setBody(body);
+            model.setTimeoutExpress(timeout_express);
+            model.setProductCode(product_code);
+
+            // 设置商户传入业务信息  2026-07-14 21:30:00
+
+            // 核心business_params 风控参数
+            String businessParamsJson = "{" +
+                    "\"mc_create_trade_ip\":\"" + clientIp + "\"," +
+                    "\"mc_create_trade_time\":\"" + dateTime + "\"," +
+                    "\"device_info\":\"" + deviceInfoStr + "\"," +
+                    "\"scene_info\":\"VIRTUAL\"," +
+                    "\"mobile_operating_platform\":\"" + mobileOperatingPlatform + "\"" +
+                    "}";
+            logger.info("businessParamsJson:{}", businessParamsJson);
+            model.setBusinessParams(businessParamsJson);
+
+            alipay_request.setBizModel(model);
+            // 设置异步通知地址
+            alipay_request.setNotifyUrl(alipayConfig.getNotifyUrl());
+            // 设置同步地址
+            if(StringUtils.isNotEmpty(orderInfo.getReturnUrl())){
+                alipay_request.setReturnUrl(returnUrl);
+            }else{
+                alipay_request.setReturnUrl(alipayConfig.getReturnUrl());
+            }
+            // form表单生产
+            String form = "";
+            try {
+                // 调用SDK生成表单
+                // form = alipayClient.sdkExecute(alipay_request).getBody();
+                form = alipayClient.pageExecute(alipay_request).getBody();
+            } catch (AlipayApiException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            if(form==""||"".equals(form)|| StringUtils.isEmpty(form)){
+                return "调用异常10010！";
+            }
+            orderInfo.setBodys(form);
+            orderInfo.setMerchantNo(aliPayAppid);
+            orderInfo.setUpdateTime(new Date());
+            orderInfo.setCallbackStatus(0L);
+            String orderMerMd5 = Md5Utils.hash(orderInfo.getOrderNo()+orderInfo.getMerchantNo()).toUpperCase();
+            String payurl ="";
+            if(ObjectUtil.isNotEmpty(orderInfo.getCashier())&&orderInfo.getCashier()==1){
+                payurl = alipay+"rechargeOrder/"+ orderInfo.getOrderNo()+"/"+orderMerMd5;  //收银台
+            }else {
+                payurl = alipay+"payOrderInfo/"+ orderInfo.getOrderNo()+"/"+orderMerMd5;
+            }
+            orderInfo.setPayUrl(payurl);
+            orgOrderInfoService.updateOrgOrderInfo(orderInfo);
+            return form;
+        }else{
+            return "调用异常10010！";
         }
     }
 
@@ -327,10 +446,16 @@ public class AlipayServerImpl implements AlipayServer {
 //        extendParams.setCardType("S0JP0000");
 //        model.setExtendParams(extendParams);
 //
-//        // 设置商户传入业务信息
-//        BusinessParams businessParams = new BusinessParams();
-//        businessParams.setMcCreateTradeIp("127.0.0.1");
-//        model.setBusinessParams(businessParams);
+        // 设置商户传入业务信息
+
+//        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        Calendar calendar = Calendar.getInstance();
+//        String dateTime = df.format(calendar.getTime());
+
+        BusinessParams businessParams = new BusinessParams();
+        businessParams.setMcCreateTradeIp(orderInfo.getClientIp());
+        model.setBusinessParams(businessParams);
+
 //
 //        // 设置可打折金额
 //        model.setDiscountableAmount("80.00");
@@ -360,8 +485,7 @@ public class AlipayServerImpl implements AlipayServer {
         String orderMerMd5 = Md5Utils.hash(orderInfo.getOrderNo()+orderInfo.getMerchantNo()).toUpperCase();
         String payurl =  alipay+"payOrderInfo/"+ orderInfo.getOrderNo()+"/"+orderMerMd5;
         orderInfo.setPayUrl(payurl);
-        orgOrderInfoService.insertOrgOrderInfo(orderInfo);
-
+        orgOrderInfoService.updateOrgOrderInfo(orderInfo);
         return response.getQrCode();
 
     }
@@ -473,6 +597,7 @@ public class AlipayServerImpl implements AlipayServer {
             //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化
             //valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
             params.put(name, valueStr);
+            logger.info(name+"   ===>   " + valueStr);
         }
         //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以下仅供参考)//
         //商户订单号
@@ -484,6 +609,27 @@ public class AlipayServerImpl implements AlipayServer {
 
         //交易状态
         String trade_status = new String(request.getParameter("trade_status").getBytes("ISO-8859-1"),"UTF-8");
+
+
+        // 异步notify中
+        String extInfo = request.getParameter("ext_info");
+        String riskLevel = "low";
+        if (extInfo != null && !extInfo.trim().isEmpty()) {
+            JSONObject extJson = JSON.parseObject(extInfo);
+            riskLevel = extJson.getString("ext_create_trade_risk_level");
+        }
+        // 业务逻辑
+        switch (riskLevel) {
+            case "high":
+                // 高风险，拦截/延迟结算
+                break;
+            case "mid":
+                // 可疑人工审核
+                break;
+            default:
+                // low / 无标记，正常用户
+                break;
+        }
 
         //获取支付宝的通知返回参数，可参考技术文档中页面跳转同步通知参数列表(以上仅供参考)//
         //计算得出通知验证结果
@@ -514,6 +660,7 @@ public class AlipayServerImpl implements AlipayServer {
                 order.setMerchanOrderNo(trade_no);
                 order.setOrderStatus(1L);
                 order.setCompletionTime(new Date());
+                order.setOrderKey(riskLevel);
                 asyncUpdateOrderStatus(order);
 //                int count =  orgOrderInfoService.updateOrgOrderInfo(order);
 //                if (count<=0) {
@@ -1168,5 +1315,23 @@ public class AlipayServerImpl implements AlipayServer {
 
         }
         return null;
+    }
+
+    /**
+     * 获取用户真实外网IP（兼容Nginx反向代理）
+     */
+    public static String getRealIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Real-IP");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Forwarded-For");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // 多IP取第一个
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
     }
 }
