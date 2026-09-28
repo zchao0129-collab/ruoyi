@@ -1,102 +1,488 @@
 <!DOCTYPE html>
-<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:include="include :: header('会员充值')" />
     <meta charset="UTF-8">
     <title>充值中心</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <script src="https://gw.alipayobjects.com/as/g/h5-lib/alipayjsapi/3.1.1/alipayjsapi.min.js"></script>
+    <!-- H5 视口：禁止缩放 + 适配刘海屏安全区 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <!-- iOS Web App 适配 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <!-- DNS预解析 -->
+    <link rel="dns-prefetch" href="//cdn.bootcss.com">
+    <!-- 全量内联CSS — 移动端零外部CSS依赖 -->
     <style>
+        /* ===== Reset ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         html {
-            overflow: hidden;
-        }
-        body {
-            background-color: #f5f5f5;
             height: 100%;
-            overflow: auto;
+            overflow: hidden;
+            /* iOS 平滑滚动 */
             -webkit-overflow-scrolling: touch;
+            /* 禁止iOS长按弹出菜单（链接/图片） */
+            -webkit-touch-callout: none;
+            /* 文字大小自适应 */
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
         }
-        .container {
-            margin-top: 50px;
+
+        body {
+            min-height: 100%;
+            /* 安全区适配 */
+            min-height: -webkit-fill-available;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* 渐变背景 */
+            background: linear-gradient(160deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            /* 系统字体栈 — 移动端优先中文字体 */
+            font-family:
+                -apple-system, BlinkMacSystemFont,
+                "PingFang SC", "Hiragino Sans GB",
+                "Microsoft YaHei", "Helvetica Neue",
+                Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+            overflow-y: auto;
+            overflow-x: hidden;
+            /* 安全区 padding */
+            padding: env(safe-area-inset-top, 16px)
+                     env(safe-area-inset-right, 16px)
+                     env(safe-area-inset-bottom, 16px)
+                     env(safe-area-inset-left, 16px);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* ===== 背景光晕 ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== 卡片容器 ===== */
+        .pay-card {
+            position: relative;
+            z-index: 1;
+            width: calc(100vw - 32px);
+            max-width: 380px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+            overflow: hidden;
+            animation: cardFadeIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+            margin: auto;
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(36px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 顶部品牌区 ===== */
+        .pay-header {
+            background: linear-gradient(135deg, #1677FF 0%, #0958D9 100%);
+            padding: 32px 20px 24px;
             text-align: center;
+            position: relative;
         }
 
-        .form-horizontal {
-            margin: 0 auto;
-            max-width: 500px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        /* 波浪底边 */
+        .pay-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0; right: 0;
+            height: 24px;
+            background: #fff;
+            border-radius: 60% 60% 0 0;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .pay-header .brand-icon {
+            width: 52px; height: 52px;
+            margin: 0 auto 12px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
         }
 
-        .form-control:focus {
-            border-color: #5cb85c;
-            box-shadow: none;
+        .pay-header .brand-name {
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            position: relative; z-index: 1;
         }
 
-        .btn-primary {
-            background-color: #5cb85c;
-            border-color: #5cb85c;
+        .pay-header .brand-sub {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            margin-top: 4px;
+            position: relative; z-index: 1;
         }
 
-        .btn-primary:hover,
-        .btn-primary:focus,
-        .btn-primary:active,
-        .btn-primary.active {
-            background-color: #449d44;
-            border-color: #449d44;
+        /* ===== 内容区 ===== */
+        .pay-body {
+            padding: 24px 24px calc(20px + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* 金额标签 */
+        .amount-label {
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+            letter-spacing: 0.15em;
+            margin-bottom: 8px;
+        }
+
+        /* 金额数字 */
+        .amount-display {
+            text-align: center;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .amount-display .currency {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            vertical-align: top;
+        }
+        .amount-display .value {
+            font-size: 44px;
+            font-weight: 800;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+        }
+
+        /* 分割线 */
+        .amount-divider {
+            width: 44px; height: 3px;
+            background: linear-gradient(90deg, #1677FF, #69b1ff);
+            border-radius: 2px;
+            margin: 14px auto 20px;
+            opacity: 0.5;
+        }
+
+        /* 信息行 */
+        .info-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background: #f8f9fb;
+            border-radius: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .info-row:active {
+            background: #eef1f6;
+        }
+
+        .info-icon {
+            width: 34px; height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+            margin-right: 12px;
+        }
+        .info-icon.order  { background: #e6f4ff; }
+        .info-icon.method { background: #f0fbe8; }
+
+        .info-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .info-text .info-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 1px;
+        }
+        .info-text .info-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ===== 支付按钮（H5 触控优化） ===== */
+        .btn-pay {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            /* 最小44px触控区域 + 额外padding */
+            min-height: 52px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #1677FF 0%, #4096FF 100%);
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            border: none;
+            border-radius: 14px;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(22,119,255,0.35);
+            position: relative;
+            overflow: hidden;
+            /* 移动端关键属性 */
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            cursor: pointer;
+            /* 触控反馈过渡 */
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            /* 防止iOS橡皮筋效果触发 */
+            touch-action: manipulation;
+        }
+
+        /* 按钮光泽层 */
+        .btn-pay::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, transparent 100%);
+            border-radius: 14px 14px 0 0;
+            pointer-events: none;
+        }
+
+        /* 触控按下（替代hover） */
+        .btn-pay:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 12px rgba(22,119,255,0.25);
+            transition-duration: 0.08s;
+        }
+
+        /* 禁用态 — 防止重复点击 */
+        .btn-pay.is-loading {
+            pointer-events: none;
+            opacity: 0.7;
+            transform: scale(0.97);
+        }
+
+        .btn-pay .btn-icon {
+            width: 20px; height: 20px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        /* ===== 底部安全提示 ===== */
+        .pay-footer-text {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 11px;
+            color: #bbb;
+            line-height: 1.5;
+        }
+
+        /* ===== 横屏适配 ===== */
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                align-items: flex-start;
+                padding-top: 12px;
+                padding-bottom: 12px;
+            }
+            .pay-card {
+                max-width: 480px;
+                margin: 0 auto;
+            }
+            .pay-header {
+                padding: 20px 20px 18px;
+            }
+            .pay-body {
+                padding: 16px 24px 16px;
+            }
+            .amount-display .value { font-size: 36px; }
+            .pay-header .brand-icon { width: 40px; height: 40px; font-size: 20px; margin-bottom: 8px; }
+            .info-row { padding: 8px 14px; margin-bottom: 4px; }
+            .btn-pay { margin-top: 12px; min-height: 44px; padding: 12px 16px; }
+        }
+
+        /* ===== 小屏适配 (iPhone SE 320px) ===== */
+        @media (max-width: 374px) {
+            .pay-card { width: calc(100vw - 20px); border-radius: 16px; }
+            .pay-header { padding: 24px 16px 20px; }
+            .pay-body  { padding: 18px 16px 16px; }
+            .amount-display .value   { font-size: 36px; }
+            .amount-display .currency { font-size: 18px; }
+            .btn-pay { font-size: 16px; min-height: 48px; border-radius: 12px; }
+            .pay-header .brand-icon { width: 44px; height: 44px; font-size: 22px; }
+        }
+
+        /* ===== 暗色模式 ===== */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(160deg, #1a1a2e 0%, #16213e 100%);
+            }
+            .pay-card { background: #1f1f2e; }
+            .pay-header::after { background: #1f1f2e; }
+            .info-row { background: #2a2a3c; }
+            .info-row:active { background: #35354a; }
+            .info-text .info-value { color: #ddd; }
+            .amount-display .value,
+            .amount-display .currency { color: #fff; }
+            .amount-label { color: #888; }
+        }
+
+        /* ===== 减弱动画（无障碍） ===== */
+        @media (prefers-reduced-motion: reduce) {
+            .pay-card { animation: none; }
+            .btn-pay  { transition: none; }
+        }
+
+        /* ===== 高分屏微调 ===== */
+        @media (-webkit-min-device-pixel-ratio: 3) {
+            .btn-pay { -webkit-font-smoothing: antialiased; }
         }
     </style>
 </head>
-<body class="gray-bg">
-<div class="container">
-    <form class="form-horizontal" action="#" method="post">
-        <div class="form-group">
-            <input type="hidden" class="form-control" id="orderNo" name="orderNo" th:value="${orderNo}" disabled>
-            <input type="hidden" class="form-control" id="toSign" name="toSign" th:value="${toSign}" disabled>
-            <input type="hidden" class="form-control" id="actionUrl" name="actionUrl" th:value="${actionUrl}" disabled>
-            <label class="col-sm-3 control-label">充值中心：</label>
-            <div class="col-sm-9">
-                <input type="text" class="form-control" id="amount" name="amount" th:value="${amount}" disabled>
-            </div>
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-3 col-sm-9">
-                <a id = "link_href" class="btn btn-primary btn-block">确认支付</a>
-            </div>
-        </div>
-    </form>
-</div>
-<th:block th:include="include :: footer" />
-<script th:inline="javascript">
+<body>
 
-    window.onload = function () {
-        var orderNo = $('#orderNo').val();
-        var toSign = $('#toSign').val();
-        var actionUrl = $('#actionUrl').val();
-        var rec_url =actionUrl+"sendAlipay/"+orderNo+"/"+toSign;
-        //var rec_url = getRootPath()+"/outside/order/sendAlipay/"+orderNo+"/"+toSign;
-        var link_href = document.getElementById("link_href");
-        link_href.href ="alipays://platformapi/startapp?appId=20000067&url="+encodeURIComponent(rec_url);
+<!-- ===== 支付卡片 ===== -->
+<div class="pay-card">
+
+    <!-- 顶部 -->
+    <div class="pay-header">
+        <div class="brand-icon">💎</div>
+        <div class="brand-name">会员充值</div>
+        <div class="brand-sub">安全 · 快捷 · 实时到账</div>
+    </div>
+
+    <!-- 内容 -->
+    <div class="pay-body">
+
+        <div class="amount-label">支付金额</div>
+        <div class="amount-display">
+            <span class="currency">¥</span>
+            <span class="value" id="amountDisplay">0.00</span>
+        </div>
+        <div class="amount-divider"></div>
+
+        <div class="info-row">
+            <div class="info-icon order">📋</div>
+            <div class="info-text">
+                <div class="info-label">订单编号</div>
+                <div class="info-value" id="orderNoDisplay">—</div>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-icon method">💳</div>
+            <div class="info-text">
+                <div class="info-label">支付方式</div>
+                <div class="info-value">支付宝</div>
+            </div>
+        </div>
+
+        <!-- 隐藏数据 -->
+        <input type="hidden" id="orderNo"   th:value="${orderNo}">
+        <input type="hidden" id="toSign"    th:value="${toSign}">
+        <input type="hidden" id="actionUrl" th:value="${actionUrl}">
+        <input type="hidden" id="amount"    th:value="${amount}">
+
+        <!-- 支付按钮 -->
+        <a id="link_href" class="btn-pay" href="javascript:void(0);" role="button">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            确认支付
+        </a>
+
+        <div class="pay-footer-text">
+            🔒 支付环境安全加密 · 请放心使用
+        </div>
+    </div>
+</div>
+
+<th:block th:include="include :: footer" />
+
+<script th:inline="javascript">
+(function () {
+    'use strict';
+
+    // DOM 就绪后立即执行 — 不依赖任何外部库
+    function init() {
+        var orderNoEl  = document.getElementById('orderNo');
+        var amountEl   = document.getElementById('amount');
+        var actionUrlEl = document.getElementById('actionUrl');
+        var toSignEl   = document.getElementById('toSign');
+        var linkHref   = document.getElementById('link_href');
+        var amountDisplay   = document.getElementById('amountDisplay');
+        var orderNoDisplay  = document.getElementById('orderNoDisplay');
+
+        if (!orderNoEl || !linkHref) { return; }
+
+        var orderNo  = orderNoEl.value;
+        var toSign   = toSignEl.value;
+        var actionUrl = actionUrlEl.value;
+        var amount   = amountEl.value;
+
+        // 金额展示
+        if (amount && amountDisplay) {
+            var num = parseFloat(amount);
+            amountDisplay.textContent = isNaN(num) ? '0.00' : num.toFixed(2);
+        }
+
+        // 订单号展示（过长截断）
+        if (orderNo && orderNoDisplay) {
+            orderNoDisplay.textContent = orderNo.length > 14
+                ? orderNo.substr(0, 4) + '…' + orderNo.slice(-8)
+                : orderNo;
+        }
+
+        // 设置支付宝跳转
+        var payUrl = 'alipays://platformapi/startapp?appId=20000067&url='
+                   + encodeURIComponent(actionUrl + 'sendAlipay/' + orderNo + '/' + toSign);
+
+        linkHref.href = payUrl;
+
+        // 防重复点击 — 点击后按钮禁用 2 秒
+        linkHref.addEventListener('click', function (e) {
+            if (linkHref.classList.contains('is-loading')) {
+                e.preventDefault();
+                return;
+            }
+            linkHref.classList.add('is-loading');
+            // 2秒后恢复（处理支付宝未安装或跳转失败的情况）
+            setTimeout(function () {
+                linkHref.classList.remove('is-loading');
+            }, 2000);
+        });
+
+        // 触摸时取消 hover 残留（iOS Safari 常见问题）
+        linkHref.addEventListener('touchend', function () {
+            linkHref.blur();
+        });
     }
-    // 获取地址栏的绝对路径
-    function getRootPath() {
-        var strFullPath = window.document.location.href;
-        var strPath = window.document.location.pathname;
-        var pos = strFullPath.indexOf(strPath);
-        var prePath = strFullPath.substring(0, pos);
-        var postPath = strPath.substring(0, strPath.substr(1).indexOf('/') + 1);
-        //return (prePath + postPath);
-        return prePath;
+
+    // DOMContentLoaded 比 window.onload 快得多
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
     }
+})();
 </script>
+
 </body>
 </html>

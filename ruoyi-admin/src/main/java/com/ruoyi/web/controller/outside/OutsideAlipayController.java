@@ -122,38 +122,36 @@ public class OutsideAlipayController extends BaseController {
 
     @PostMapping("/createOrderInfo")
     @ResponseBody
-    public AjaxResult createAlipayOrder(@RequestBody OutsideOrderVO orderVo,HttpServletRequest request) throws Exception{
-        logger.info("接收参数:"+orderVo.toString());
-        if(StringUtils.isEmpty(orderVo.getAppid())){
-            return new AjaxResult(AjaxResult.Type.ERROR,"appid为空","appid为空");
+    public AjaxResult createAlipayOrder(@RequestBody OutsideOrderVO orderVo) throws Exception {
+        logger.info("接收参数:{}", orderVo);
+
+        // 缓存常用变量，避免重复调用getter
+        String appId = orderVo.getAppid();
+        if (StringUtils.isEmpty(appId)) {
+            return new AjaxResult(AjaxResult.Type.ERROR, "appid为空", "appid为空");
         }
-        //验证appid
+
+        // 验证appid
         OrgAccount account = new OrgAccount();
-        account.setAccountAppId(orderVo.getAppid());
+        account.setAccountAppId(appId);
         account.setAccountStatus(1L);
         account = accountService.selectOne(account);
-        if(account == null){
-            return new AjaxResult(AjaxResult.Type.ERROR,"客户通道停用！","");
+        if (account == null) {
+            return new AjaxResult(AjaxResult.Type.ERROR, "客户通道停用！", "");
         }
 
-        String afterSign = orderVo.getAppid()+orderVo.getMerchantOrderNo()+orderVo.getCallbackUrl()+
-                orderVo.getAmount()+orderVo.getTimestamps()+account.getAccountToken();
-
-        logger.info("afterSign:"+afterSign);
+        // 验签
+        String afterSign = appId + orderVo.getMerchantOrderNo() + orderVo.getCallbackUrl()
+                + orderVo.getAmount() + orderVo.getTimestamps() + account.getAccountToken();
+        logger.info("afterSign:{}", afterSign);
         String sign = Md5Utils.hash(afterSign).toUpperCase();
-        logger.info("sign:"+sign);
-
-        if(!sign.equals(orderVo.getSign())){
-            return new AjaxResult(AjaxResult.Type.ERROR,"验签失败！","");
+        logger.info("sign:{}", sign);
+        if (!sign.equals(orderVo.getSign())) {
+            return new AjaxResult(AjaxResult.Type.ERROR, "验签失败！", "");
         }
 
-//        if(StringUtils.isNotEmpty(orderVo.getUid())){
-//            int count = orderService.seleteByUid(orderVo.getAppid(),orderVo.getUid());
-//            if( count > 2 ){
-//                return new AjaxResult(AjaxResult.Type.ERROR,"拉取订单失败，请更换支付通道！","");
-//            }
-//        }
-
+        // 构建订单信息
+        BigDecimal amount = orderVo.getAmount();
         OrgOrderInfo orderInfo = new OrgOrderInfo();
         orderInfo.setAccountName(account.getAccountName());
         orderInfo.setAccountId(account.getId());
@@ -162,82 +160,84 @@ public class OutsideAlipayController extends BaseController {
         orderInfo.setAccountOrderNo(orderVo.getMerchantOrderNo());
         orderInfo.setCallbackUrl(orderVo.getCallbackUrl());
         orderInfo.setReturnUrl(orderVo.getReturnUrl());
-        orderInfo.setAmount(orderVo.getAmount());
-        getIpAddr(request);
-        if("0".equals(yjType)){ //
-            orderInfo.setYjamount(orderVo.getAmount());
-        }else if("1".equals(yjType)){   //递减
-            BigDecimal bd = orderVo.getAmount().subtract(getRandomRedPacketBetweenMinAndMax(orderVo.getAmount()));
-            orderInfo.setAmount(orderVo.getAmount());
-            orderInfo.setYjamount(bd);
-        }else{                           //递增
-            BigDecimal bd = orderVo.getAmount().add(getRandomRedPacketBetweenMinAndMaxAdd(orderVo.getAmount()));
-            orderInfo.setAmount(orderVo.getAmount());
-            orderInfo.setYjamount(bd);
+        orderInfo.setAmount(amount);
+
+        // 根据yjType计算佣金金额
+        switch (yjType) {
+            case "0":
+                orderInfo.setYjamount(amount);
+                break;
+            case "1":
+                // 递减
+                orderInfo.setYjamount(amount.subtract(getRandomRedPacketBetweenMinAndMax()));
+                break;
+            default:
+                // 递增
+                orderInfo.setYjamount(amount.add(getRandomRedPacketBetweenMinAndMaxAdd()));
+                break;
         }
-        long id = IdWorkerUtil.getId();
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-//        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmssSSSS");
-        String orderNo = "D"+id+System.currentTimeMillis();
+
+        String orderNo = "D" + IdWorkerUtil.getId() + System.currentTimeMillis();
         orderInfo.setOrderNo(orderNo);
-        orderInfo.setSubject("用户充值");//sdf1
-        orderInfo.setAcountAppId(orderVo.getAppid());
+        orderInfo.setSubject("用户充值");
+        orderInfo.setAcountAppId(appId);
         orderInfo.setCashier(account.getCashier());
         orderInfo.setCallbackStatus(0L);
-        if("30".equals(orderVo.getMethod())){  //直付通
+
+        // 根据支付方式路由到不同的支付通道
+        String method = orderVo.getMethod();
+        if ("30".equals(method)) {
+            // 直付通
             return payZftServer.tradeOrder(orderInfo);
-        }else if("60".equals(orderVo.getMethod())){  // QR当面付
+        } else if ("60".equals(method)) {
+            // QR当面付
             return alipayServer.face2FaceQRPayment(orderInfo);
-        }else{
-            if (1 == account.getPayChannel()){
-                return payZftServer.tradeOrder(orderInfo);
-            }else if (2 == account.getPayChannel()){
-                return payZftServer.yujianTradeOrder(orderInfo);
-            }else if (90 == account.getPayChannel()){
-                return alipayServer.aliJSapiPayment(orderInfo);
-            }else {
-                return alipayServer.aliPayment(orderInfo);
+        }
+
+        Long payChannel = account.getPayChannel();
+        if (payChannel != null) {
+            switch (payChannel.intValue()) {
+                case 1:
+                    return payZftServer.tradeOrder(orderInfo);
+                case 2:
+                    return payZftServer.yujianTradeOrder(orderInfo);
+                case 90:
+                    return alipayServer.aliJSapiPayment(orderInfo);
+                default:
+                    return alipayServer.aliPayment(orderInfo);
             }
         }
+        return alipayServer.aliPayment(orderInfo);
     }
 
     @GetMapping("/payOrderInfo/{orderNo}/{sign}")
     @ResponseBody
-    public String alipayOrder(@PathVariable("orderNo") String orderNo,@PathVariable("sign") String sign,HttpServletRequest request){
-        if(StringUtils.isEmpty(orderNo)&&StringUtils.isEmpty(sign)){
+    public String alipayOrder(@PathVariable("orderNo") String orderNo, @PathVariable("sign") String sign, HttpServletRequest request) {
+        if (StringUtils.isEmpty(orderNo) && StringUtils.isEmpty(sign)) {
             return "调用失败";
         }
-        logger.info("   orderNo:"+orderNo);
-        logger.info("      sign:"+sign);
+        logger.info("   orderNo:{}", orderNo);
+        logger.info("      sign:{}", sign);
 
         OrgOrderInfo orderInfo = orderService.selectorderByOrderId(orderNo);
 
-        String ipadd = getIpAddr(request);
-        //updateOrderInfoClientIp(orderInfo,ipadd);
-        //int count = orderService.seleteByIp(ipadd);
-        if("1".equals(outChinaIp)){
-            if(!clientIpInChina(ipadd)){
-                return "非境内IP！";
-            }
+        // IP校验：仅在开启境外IP限制时才获取IP并校验，避免不必要的header解析和外部HTTP调用
+        if ("1".equals(outChinaIp) && !clientIpInChina(getIpAddr(request))) {
+            return "非境内IP！";
         }
-        // 获取并更新会员 信息
-//        AlipayUserInfo  alipayUserInfo = new AlipayUserInfo();
-//        alipayUserInfo.setAppid(orderInfo.getMerchantNo());
-//        getAlipayUserInfo(alipayUserInfo);
 
-        if(BeanUtil.isNotEmpty(orderInfo)) {
-            String  aftSign = Md5Utils.hash(orderInfo.getOrderNo()+orderInfo.getMerchantNo()).toUpperCase();
-            logger.info("   aftSign:"+aftSign);
-            if(sign.equals(aftSign)){
-                logger.info("-----------------------");
-                return orderInfo.getBodys();
-            }else{
-                logger.error("解密失败：");
-                return "调用失败";
-            }
-        }else{
+        if (BeanUtil.isEmpty(orderInfo)) {
             return "调用失败";
         }
+
+        String aftSign = Md5Utils.hash(orderInfo.getOrderNo() + orderInfo.getMerchantNo()).toUpperCase();
+        logger.info("   aftSign:{}", aftSign);
+        if (sign.equals(aftSign)) {
+            logger.info("-----------------------");
+            return orderInfo.getBodys();
+        }
+        logger.error("解密失败：");
+        return "调用失败";
     }
 
 
@@ -434,23 +434,21 @@ public class OutsideAlipayController extends BaseController {
         }
         logger.info("支付宝支付同步跳转 request ===> " + request.getParameterMap());
     }
-    public static BigDecimal getRandomRedPacketBetweenMinAndMax(BigDecimal amount){
+    public static BigDecimal getRandomRedPacketBetweenMinAndMax() {
         float minF = 0.01f;
         float maxF = 0.05f;
-        //生成随机数
-        BigDecimal db = new BigDecimal(Math.random() * (maxF - minF) + minF);
-        //返回保留两位小数的随机数。不进行四舍五入
-        return db.setScale(2,BigDecimal.ROUND_DOWN);
+        // 使用BigDecimal.valueOf避免double精度丢失
+        return BigDecimal.valueOf(Math.random() * (maxF - minF) + minF)
+                .setScale(2, BigDecimal.ROUND_DOWN);
     }
 
 
-    public static BigDecimal getRandomRedPacketBetweenMinAndMaxAdd(BigDecimal amount){
+    public static BigDecimal getRandomRedPacketBetweenMinAndMaxAdd() {
         float minF = 0.20f;
         float maxF = 0.59f;
-        //生成随机数
-        BigDecimal db = new BigDecimal(Math.random() * (maxF - minF) + minF);
-        //返回保留两位小数的随机数。不进行四舍五入
-        return db.setScale(2,BigDecimal.ROUND_DOWN);
+        // 使用BigDecimal.valueOf避免double精度丢失
+        return BigDecimal.valueOf(Math.random() * (maxF - minF) + minF)
+                .setScale(2, BigDecimal.ROUND_DOWN);
     }
 
 
