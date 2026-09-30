@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>收银台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link th:href="@{/css/wx-guide.css?v=20260929d}" rel="stylesheet"/>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f5f5f5;
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+        }
+        .cashier {
+            padding: 48px 16px 24px;
+        }
+        .cashier-card {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px 24px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+        .cashier-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .cashier-brand {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #1677ff;
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+        }
+        .cashier-title {
+            font-size: 16px;
+            color: #333;
+            font-weight: 600;
+        }
+        .cashier-amount {
+            line-height: 1;
+        }
+        .cashier-amount .currency {
+            font-size: 22px;
+            color: #1a1a1a;
+            font-weight: 700;
+            vertical-align: top;
+        }
+        .cashier-amount .value {
+            font-size: 46px;
+            color: #1a1a1a;
+            font-weight: 800;
+        }
+        .cashier-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            letter-spacing: 0.1em;
+        }
+        .cashier-info {
+            margin: 28px 0 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 13px 2px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        .info-key {
+            color: #999;
+        }
+        .info-val {
+            color: #333;
+            max-width: 68%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .cashier-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: #fff;
+            background: #1677ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cashier-btn:active {
+            background: #0e5fd6;
+        }
+        .cashier-btn:disabled {
+            opacity: 0.7;
+        }
+        .cashier-safe {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #bbb;
+        }
+        .loading-box {
+            text-align: center;
+            padding-top: 80px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<!-- 收银台 -->
+<div class="cashier" id="cashier" style="display:none;">
+    <div class="cashier-card">
+        <div class="cashier-header">
+            <div class="cashier-brand">支</div>
+            <div class="cashier-title">支付宝支付</div>
+        </div>
+        <div class="cashier-amount">
+            <span class="currency">¥</span>
+            <span class="value" id="amountDisplay">0.00</span>
+        </div>
+        <div class="cashier-label">支付金额</div>
+        <div class="cashier-info">
+            <div class="info-row">
+                <span class="info-key">订单编号</span>
+                <span class="info-val" id="orderNoDisplay">—</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">支付方式</span>
+                <span class="info-val">支付宝</span>
+            </div>
+        </div>
+        <button class="cashier-btn" id="payBtn" type="button">立即支付</button>
+        <div class="cashier-safe">🔒 支付环境安全加密 · 请放心使用</div>
+    </div>
+</div>
+
+<div class="loading-box" id="loadingTip">正在加载，请稍候…</div>
+
+<input type="hidden" id="orderNo" th:value="${orderNo}">
+<input type="hidden" id="sign" th:value="${sign}">
+<input type="hidden" id="amount" th:value="${amount}">
+
+<th:block th:include="include :: wx-guide" />
+
+<script>
+    var orderNo = document.getElementById('orderNo').value;
+    var sign = document.getElementById('sign').value;
+
+    // 获取地址栏的绝对路径（协议 + 主机 + 端口）
+    function getRootPath() {
+        var strFullPath = window.document.location.href;
+        var strPath = window.document.location.pathname;
+        var pos = strFullPath.indexOf(strPath);
+        return strFullPath.substring(0, pos);
+    }
+
+    // 拉取支付宝表单，去掉自动提交脚本，由用户点击「立即支付」后再提交
+    function payNow() {
+        var btn = document.getElementById('payBtn');
+        btn.disabled = true;
+        btn.innerText = '正在跳转…';
+        var url = getRootPath() + "/outside/order/payOrderInfo/bodys/" + orderNo + "/" + sign;
+        $.get(url, function (bodys) {
+            if (bodys && bodys.indexOf('<form') >= 0) {
+                var formHtml = bodys.replace(/<script[\s\S]*?<\/script>/gi, '');
+                var container = document.createElement('div');
+                container.style.display = 'none';
+                container.innerHTML = formHtml;
+                document.body.appendChild(container);
+                var form = container.querySelector('form');
+                if (form) {
+                    form.submit();
+                } else {
+                    fail('支付表单解析失败');
+                }
+            } else {
+                fail(bodys || '调用失败');
+            }
+        }).fail(function () {
+            fail('调用失败');
+        });
+    }
+
+    function fail(msg) {
+        var btn = document.getElementById('payBtn');
+        btn.disabled = false;
+        btn.innerText = '立即支付';
+        var tip = document.getElementById('loadingTip');
+        tip.style.display = 'block';
+        tip.innerText = msg || '调用失败';
+    }
+
+    // 初始化收银台信息
+    function init() {
+        var amountEl = document.getElementById('amount');
+        var num = parseFloat(amountEl.value);
+        document.getElementById('amountDisplay').innerText = isNaN(num) ? '0.00' : num.toFixed(2);
+
+        var od = document.getElementById('orderNo').value;
+        document.getElementById('orderNoDisplay').innerText = (od && od.length > 20)
+            ? od.substr(0, 8) + '…' + od.slice(-8)
+            : od;
+    }
+
+    if (isWeChat()) {
+        showWxGuide();
+    } else {
+        init();
+        document.getElementById('cashier').style.display = 'block';
+        document.getElementById('loadingTip').style.display = 'none';
+        document.getElementById('payBtn').onclick = payNow;
+    }
+</script>
+</body>
+</html>

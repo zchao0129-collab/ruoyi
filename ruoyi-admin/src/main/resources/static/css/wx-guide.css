@@ -1,0 +1,150 @@
+/* 微信内打开引导样式（X5 内核兼容：不用 gap，用 margin） */
+.wx-guide-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffffff;
+    z-index: 9999;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* 手指引导（靠右，指向右上角「···」） */
+.wx-guide-hand {
+    position: absolute;
+    top: 6px;
+    right: 12px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: wx-hand-bounce 1.2s ease-in-out infinite;
+}
+.wx-guide-hand .finger {
+    font-size: 52px;
+    line-height: 1;
+    transform: rotate(45deg);
+    display: inline-block;
+}
+.wx-guide-hand .label {
+    font-size: 15px;
+    font-weight: bold;
+    color: #e64340;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+
+/* 主体内容（文字下移一个手指图标高度，避开右上角手指） */
+.wx-guide-body {
+    align-self: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    padding: 60px 24px 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* 步骤文字 */
+.wx-guide-step {
+    font-size: 17px;
+    color: #e64340;
+    line-height: 1.9;
+}
+.wx-guide-hl {
+    font-weight: bold;
+}
+
+/* 浏览器图标 */
+.wx-guide-browsers {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    margin: 28px 0 0 0;
+}
+.wx-browser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 16px;
+}
+.wx-browser img {
+    display: block;
+}
+.wx-b-name {
+    font-size: 11px;
+    color: #666;
+    margin-top: 6px;
+}
+
+/* 支付宝图标 */
+.wx-guide-alipay {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #1677ff;
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 32px 0 12px;
+}
+
+/* 金额 */
+.wx-guide-amount {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 复制链接区 */
+.wx-guide-copy {
+    width: 100%;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+.wx-guide-copy-tip {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 12px;
+}
+.wx-guide-url {
+    font-size: 12px;
+    color: #999;
+    word-break: break-all;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 12px;
+    text-align: left;
+}
+.wx-guide-btn {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: #5cb85c;
+    color: #fff;
+    border-radius: 4px;
+    padding: 12px 0;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+@keyframes wx-hand-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
