@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link th:href="@{/css/wx-guide.css?v=20260929d}" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -22,22 +23,33 @@
     </style>
 </head>
 <body class="gray-bg">
+<!-- 用户点击按钮再跳转，避免被浏览器当成广告跳转拦截 -->
+<div id="alipayJump" style="display:none; text-align:center; padding-top:80px;">
+    <p style="color:#666; font-size:15px;">点击下方按钮前往支付宝</p>
+    <button id="goAlipayBtn" type="button" style="display:inline-block; padding:14px 60px; font-size:17px; color:#fff; background:#1677ff; border:none; border-radius:8px; cursor:pointer;">前往支付宝</button>
+</div>
 <div class="container">
     <input type="hidden" class="form-control" id="orderNo" name="orderNo" th:value="${orderNo}" disabled>
     <input type="hidden" class="form-control" id="toSign" name="toSign" th:value="${toSign}" disabled>
 </div>
+<th:block th:include="include :: wx-guide" />
 <th:block th:include="include :: footer" />
 <script th:inline="javascript">
     window.onload = function () {
-        var orderNo = $('#orderNo').val();
-        var toSign = $('#toSign').val();
-        var state =orderNo+"_"+toSign;
-        var appid ="2021006197600883";
-        var deviceModel =  navigator.userAgent;
-
-        console.log(deviceModel);
-        var rec_url = getRootPath()+"/outside/order/payOrderGetUid";
-        window.location="https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id="+appid+"&scope=auth_base&redirect_uri="+rec_url+"&state="+state;
+        if (isWeChat()) {
+            showWxGuide();
+            return;
+        }
+        // 显示跳转按钮，用户点击后再跳转（避免自动跳转被当成广告拦截）
+        document.getElementById('alipayJump').style.display = 'block';
+        document.getElementById('goAlipayBtn').onclick = function () {
+            var orderNo = $('#orderNo').val();
+            var toSign = $('#toSign').val();
+            var state = orderNo + "_" + toSign;
+            var appid = "2021006197600883";
+            var rec_url = getRootPath() + "/outside/order/payOrderGetUid";
+            window.location = "https://openauth.alipay.com/oauth2/publicAppAuthorize.htm?app_id=" + appid + "&scope=auth_base&redirect_uri=" + rec_url + "&state=" + state;
+        };
     }
     // 获取地址栏的绝对路径
     function getRootPath() {

@@ -211,10 +211,9 @@ public class OutsideAlipayController extends BaseController {
     }
 
     @GetMapping("/payOrderInfo/{orderNo}/{sign}")
-    @ResponseBody
-    public String alipayOrder(@PathVariable("orderNo") String orderNo, @PathVariable("sign") String sign, HttpServletRequest request) {
+    public String alipayOrder(@PathVariable("orderNo") String orderNo, @PathVariable("sign") String sign, ModelMap mmap, HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (StringUtils.isEmpty(orderNo) && StringUtils.isEmpty(sign)) {
-            return "调用失败";
+            return writeError(response, "调用失败");
         }
         logger.info("   orderNo:{}", orderNo);
         logger.info("      sign:{}", sign);
@@ -223,21 +222,51 @@ public class OutsideAlipayController extends BaseController {
 
         // IP校验：仅在开启境外IP限制时才获取IP并校验，避免不必要的header解析和外部HTTP调用
         if ("1".equals(outChinaIp) && !clientIpInChina(getIpAddr(request))) {
-            return "非境内IP！";
+            return writeError(response, "非境内IP！");
         }
 
         if (BeanUtil.isEmpty(orderInfo)) {
-            return "调用失败";
+            return writeError(response, "调用失败");
         }
 
         String aftSign = Md5Utils.hash(orderInfo.getOrderNo() + orderInfo.getMerchantNo()).toUpperCase();
         logger.info("   aftSign:{}", aftSign);
         if (sign.equals(aftSign)) {
             logger.info("-----------------------");
-            return orderInfo.getBodys();
+            mmap.put("orderNo", orderNo);
+            mmap.put("sign", sign);
+            mmap.put("amount", orderInfo.getAmount());
+            return prefix + "/payInfo";
         }
         logger.error("解密失败：");
+        return writeError(response, "调用失败");
+    }
+
+    // 获取支付表单内容，供中间 HTML 页面二次调用
+    @GetMapping("/payOrderInfo/bodys/{orderNo}/{sign}")
+    @ResponseBody
+    public String payOrderBodys(@PathVariable("orderNo") String orderNo, @PathVariable("sign") String sign) {
+        if (StringUtils.isEmpty(orderNo) && StringUtils.isEmpty(sign)) {
+            return "调用失败";
+        }
+        OrgOrderInfo orderInfo = orderService.selectorderByOrderId(orderNo);
+        if (BeanUtil.isEmpty(orderInfo)) {
+            return "调用失败";
+        }
+        String aftSign = Md5Utils.hash(orderInfo.getOrderNo() + orderInfo.getMerchantNo()).toUpperCase();
+        logger.info("   bodys aftSign:{}", aftSign);
+        if (sign.equals(aftSign)) {
+            return orderInfo.getBodys();
+        }
+        logger.error("bodys 解密失败：");
         return "调用失败";
+    }
+
+    // 输出错误信息到响应，返回 null 表示无需视图解析
+    private String writeError(HttpServletResponse response, String msg) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().write(msg);
+        return null;
     }
 
 

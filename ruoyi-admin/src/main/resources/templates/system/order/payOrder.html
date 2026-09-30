@@ -4,6 +4,7 @@
     <th:block th:include="include :: header('会员充值')" />
     <meta charset="UTF-8">
     <title>充值中心</title>
+    <link th:href="@{/css/wx-guide.css?v=20260929d}" rel="stylesheet"/>
     <!-- H5 视口：禁止缩放 + 适配刘海屏安全区 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
     <!-- iOS Web App 适配 -->
@@ -414,6 +415,7 @@
     </div>
 </div>
 
+<th:block th:include="include :: wx-guide" />
 <th:block th:include="include :: footer" />
 
 <script th:inline="javascript">
@@ -422,6 +424,12 @@
 
     // DOM 就绪后立即执行 — 不依赖任何外部库
     function init() {
+        // 微信内置浏览器无法跳转支付宝，弹引导遮罩后终止
+        if (isWeChat()) {
+            showWxGuide();
+            return;
+        }
+
         var orderNoEl  = document.getElementById('orderNo');
         var amountEl   = document.getElementById('amount');
         var actionUrlEl = document.getElementById('actionUrl');

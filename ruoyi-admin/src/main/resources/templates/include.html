@@ -220,3 +220,39 @@
 <div th:fragment="bootstrap-table-custom-view-js">
 	<script th:src="@{/ajax/libs/bootstrap-table/extensions/custom-view/bootstrap-table-custom-view.js?v=1.18.3}"></script>
 </div>
+
+<!-- 微信内打开引导（样式 + 遮罩 + 脚本），供外部支付页复用 -->
+<div th:fragment="wx-guide">
+    <div id="wxGuide" class="wx-guide-mask" style="display:none;">
+        <div class="wx-guide-hand">
+            <span class="finger">👆</span>
+            <span class="label">点击右上角</span>
+        </div>
+        <div class="wx-guide-body">
+            <div class="wx-guide-step">在弹出的菜单中点击</div>
+            <div class="wx-guide-step"><span class="wx-guide-hl">在默认浏览器中打开</span>并完成支付</div>
+            <div class="wx-guide-browsers">
+                <div class="wx-browser">
+                    <img th:src="@{/img/browser-chrome.svg?v=20260929}" width="40" height="40" alt="Chrome"/>
+                    <span class="wx-b-name">Chrome</span>
+                </div>
+                <div class="wx-browser">
+                    <img th:src="@{/img/huawei_browser-512px.png?v=20260929}" height="40" alt="默认浏览器"/>
+                    <span class="wx-b-name">默认浏览器</span>
+                </div>
+                <div class="wx-browser">
+                    <img th:src="@{/img/browser-360.png?v=20260929}" width="40" height="40" alt="360浏览器"/>
+                    <span class="wx-b-name">360浏览器</span>
+                </div>
+            </div>
+            <div class="wx-guide-alipay">支</div>
+            <div class="wx-guide-amount" id="wxGuideAmount">¥ --</div>
+            <div class="wx-guide-copy">
+                <div class="wx-guide-copy-tip">或复制链接到浏览器中打开</div>
+                <div class="wx-guide-url" id="wxGuideUrl"></div>
+                <a class="wx-guide-btn" onclick="copyUrl()">复制链接</a>
+            </div>
+        </div>
+    </div>
+    <script th:src="@{/js/wx-guide.js?v=20260929}"></script>
+</div>
